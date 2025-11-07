@@ -112,16 +112,28 @@
             overflow-y: auto;
         }
 
+        /* Swipe Container Styles */
+        .list-card-container {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
         .list-card {
             background-color: var(--white);
             border-left: 4px solid var(--primary);
             border-radius: 8px;
             padding: 12px;
-            margin-bottom: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             position: relative;
+            z-index: 2;
+        }
+
+        .list-card.swiping {
+            transition: none;
         }
 
         .list-card:hover {
@@ -158,6 +170,41 @@
             font-size: 10px;
             font-weight: 600;
             color: white;
+        }
+
+        /* Swipe Actions */
+        .swipe-actions {
+            position: absolute;
+            top: 0;
+            right: -80px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 10px;
+            transition: right 0.3s ease;
+            z-index: 1;
+        }
+
+        .swipe-actions.show {
+            right: 0;
+        }
+
+        .swipe-delete {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .swipe-delete:hover {
+            background-color: #d32f2f;
         }
 
         /* Main Content Styles for Mobile */
@@ -709,6 +756,15 @@
                 transform: translateY(-2px);
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             }
+
+            /* Desktop Swipe Actions */
+            .list-card-container:hover .swipe-actions {
+                right: 0;
+            }
+            
+            .list-card-container:hover .list-card {
+                transform: translateX(-80px) !important;
+            }
         }
 
         /* Large Screen Styles */
@@ -1152,7 +1208,7 @@
             selectList(newList.id);
         }
 
-        // Fungsi untuk memaparkan senarai
+        // Fungsi untuk memaparkan senarai dengan swipe functionality
         function renderLists() {
             listsContainer.innerHTML = '';
             
@@ -1162,6 +1218,9 @@
             }
             
             shoppingLists.forEach(list => {
+                const listCardContainer = document.createElement('div');
+                listCardContainer.className = 'list-card-container';
+                
                 const listCard = document.createElement('div');
                 listCard.className = `list-card ${currentListId === list.id ? 'active' : ''}`;
                 
@@ -1174,9 +1233,104 @@
                     <p>${formatDate(list.date)} - RM ${list.budget.toFixed(2)}</p>
                     <span class="location-badge" style="background-color: ${locationColor}">${locationText}</span>
                 `;
+                
+                // Swipe actions
+                const swipeActions = document.createElement('div');
+                swipeActions.className = 'swipe-actions';
+                swipeActions.innerHTML = `
+                    <button class="swipe-delete" title="Padam Senarai">
+                        <i class="fas fa-trash"></i> Padam
+                    </button>
+                `;
+                
+                listCardContainer.appendChild(listCard);
+                listCardContainer.appendChild(swipeActions);
+                
+                // Event listeners
                 listCard.addEventListener('click', () => selectList(list.id));
-                listsContainer.appendChild(listCard);
+                
+                // Swipe functionality
+                let startX = 0;
+                let currentX = 0;
+                let isSwiping = false;
+                
+                listCard.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    listCard.classList.add('swiping');
+                    isSwiping = true;
+                });
+                
+                listCard.addEventListener('touchmove', (e) => {
+                    if (!isSwiping) return;
+                    
+                    currentX = e.touches[0].clientX;
+                    const diff = startX - currentX;
+                    
+                    // Only allow swiping left (negative diff)
+                    if (diff > 0) {
+                        const translateX = Math.min(diff, 80);
+                        listCard.style.transform = `translateX(-${translateX}px)`;
+                        
+                        if (translateX > 30) {
+                            swipeActions.classList.add('show');
+                        }
+                    }
+                });
+                
+                listCard.addEventListener('touchend', () => {
+                    if (!isSwiping) return;
+                    
+                    const diff = startX - currentX;
+                    
+                    if (diff > 50) {
+                        // Swipe cukup jauh - kekalkan terbuka
+                        listCard.style.transform = 'translateX(-80px)';
+                    } else {
+                        // Swipe tak cukup jauh - tutup balik
+                        listCard.style.transform = 'translateX(0)';
+                        swipeActions.classList.remove('show');
+                    }
+                    
+                    listCard.classList.remove('swiping');
+                    isSwiping = false;
+                });
+                
+                // Click delete button
+                const deleteBtn = swipeActions.querySelector('.swipe-delete');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteList(list.id);
+                });
+                
+                // Juga support untuk desktop (hover)
+                listCard.addEventListener('mouseenter', () => {
+                    listCard.style.transform = 'translateX(-80px)';
+                    swipeActions.classList.add('show');
+                });
+                
+                listCard.addEventListener('mouseleave', () => {
+                    listCard.style.transform = 'translateX(0)';
+                    swipeActions.classList.remove('show');
+                });
+                
+                listsContainer.appendChild(listCardContainer);
             });
+        }
+
+        // Fungsi untuk memadam senarai
+        function deleteList(listId) {
+            if (confirm('Adakah anda pasti ingin memadam senarai ini? Tindakan ini tidak boleh dibatalkan.')) {
+                // Keluarkan senarai dari array
+                shoppingLists = shoppingLists.filter(list => list.id !== listId);
+                
+                // Jika senarai yang dipadam adalah senarai semasa, tunjukkan front page
+                if (currentListId === listId) {
+                    showFrontPage();
+                }
+                
+                saveToLocalStorage();
+                renderLists();
+            }
         }
 
         // Fungsi untuk memilih senarai
@@ -1287,7 +1441,7 @@
             });
         }
 
-        // Fungsi untuk menambah item
+        // Fungsi untuk menambah item (FIXED - GUNA TARIKH SENARAI)
         function addItem() {
             const name = itemNameInput.value.trim();
             const price = parseFloat(itemPriceInput.value);
@@ -1301,6 +1455,10 @@
             const list = shoppingLists.find(l => l.id === currentListId);
             if (!list) return;
             
+            // PASTI dapat tarikh dari senarai belanja
+            const listDate = list.date;
+            console.log('✅ GUNA TARIKH SENARAI:', listDate, 'Untuk item:', name);
+            
             // Tambah item ke senarai
             list.items.push({
                 name,
@@ -1309,8 +1467,8 @@
                 bought: false
             });
             
-            // Simpan ke pangkalan data produk
-            updateProductDatabase(name, price, list.location);
+            // PASTI gunakan tarikh senarai belanja
+            updateProductDatabase(name, price, list.location, listDate);
             
             saveToLocalStorage();
             renderCurrentList();
@@ -1322,9 +1480,16 @@
             suggestions.style.display = 'none';
         }
 
-        // Fungsi untuk mengemas kini pangkalan data produk
-        function updateProductDatabase(name, price, location) {
-            const now = new Date().toISOString().split('T')[0];
+        // Fungsi untuk mengemas kini pangkalan data produk (FIXED - GUNA TARIKH SENARAI)
+        function updateProductDatabase(name, price, location, date) {
+            // PASTI gunakan tarikh yang diberikan (tarikh senarai belanja)
+            if (!date) {
+                console.error('❌ ERROR: Tarikh tidak diberikan!');
+                return;
+            }
+            
+            const priceDate = date;
+            console.log('💾 Simpan dengan tarikh:', priceDate);
             
             if (!productDatabase[name]) {
                 productDatabase[name] = {
@@ -1333,10 +1498,10 @@
                 };
             }
             
-            // Tambah harga baru
+            // Tambah harga baru dengan tarikh senarai belanja
             productDatabase[name].prices.push({
                 price,
-                date: now,
+                date: priceDate,
                 location
             });
             
@@ -1366,7 +1531,7 @@
             }
         }
 
-        // Fungsi untuk memaparkan sejarah harga
+        // Fungsi untuk memaparkan sejarah harga (AUTO SORT HARGA TERTINGGI)
         function showPriceHistory(itemName) {
             if (!productDatabase[itemName]) {
                 alert('Tiada sejarah harga untuk produk ini.');
@@ -1374,14 +1539,46 @@
             }
             
             const prices = [...productDatabase[itemName].prices];
-            prices.sort((a, b) => new Date(b.date) - new Date(a.date));
             
-            let historyText = `Sejarah Harga: ${itemName}\n\n`;
+            // DEBUG: Tunjuk semua tarikh dalam console
+            console.log('📊 Semua rekod untuk', itemName + ':', prices);
+            
+            // AUTO SORT: Harga Tertinggi dulu
+            prices.sort((a, b) => b.price - a.price);
+            
+            let historyText = `🕒 SEJARAH HARGA: ${itemName}\n`;
+            historyText += `📊 Disusun: Harga Tertinggi dulu\n\n`;
+            
             prices.forEach((priceData, index) => {
                 const supermarket = supermarkets.find(s => s.id === priceData.location);
                 const locationText = supermarket ? supermarket.name : 'Lain-lain';
-                historyText += `${formatDate(priceData.date)} - RM ${priceData.price.toFixed(2)} (${locationText})\n`;
+                const dateFormatted = formatDate(priceData.date);
+                
+                // Tanda untuk ranking
+                let rankMark = '';
+                if (index === 0) rankMark = ' 🥇 HARGA TERTINGGI';
+                else if (index === 1) rankMark = ' 🥈';
+                else if (index === 2) rankMark = ' 🥉';
+                
+                historyText += `${dateFormatted} - RM ${priceData.price.toFixed(2)} (${locationText})${rankMark}\n`;
             });
+            
+            // Tambah statistik
+            const highestPrice = Math.max(...prices.map(p => p.price));
+            const lowestPrice = Math.min(...prices.map(p => p.price));
+            const averagePrice = prices.reduce((sum, p) => sum + p.price, 0) / prices.length;
+            
+            historyText += `\n--- 📈 STATISTIK HARGA ---\n`;
+            historyText += `🥇 Harga Tertinggi: RM ${highestPrice.toFixed(2)}\n`;
+            historyText += `📉 Harga Terendah: RM ${lowestPrice.toFixed(2)}\n`;
+            historyText += `📊 Harga Purata: RM ${averagePrice.toFixed(2)}\n`;
+            historyText += `🔄 Bilangan Rekod: ${prices.length}`;
+            
+            // Tunjukkan perbezaan harga jika ada lebih dari 1 rekod
+            if (prices.length > 1) {
+                historyText += `\n📅 Julat Tarikh: ${formatDate(prices[prices.length-1].date)} - ${formatDate(prices[0].date)}`;
+                historyText += `\n💰 Perbezaan Harga: RM ${(highestPrice - lowestPrice).toFixed(2)}`;
+            }
             
             alert(historyText);
         }
