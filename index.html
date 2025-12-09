@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SmartDapur</title>
     
-    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -53,13 +54,26 @@
             height: 60px;
         }
 
-        .app-logo {
-            height: 40px;
-            width: auto;
-            object-fit: contain;
-            filter: brightness(0) invert(1);
+        /* LOGO SVG STYLE */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
+        .logo-svg {
+            height: 32px;
+            width: auto;
+            fill: white; /* Warna logo putih */
+        }
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
         .header-actions button { background: none; border: none; font-size: 18px; color: white; }
 
         /* --- SCREENS --- */
@@ -201,7 +215,14 @@
 <body>
 
     <header class="app-header">
-        <img src="assets/logo.png" alt="SmartDapur" class="app-logo">
+        <div class="logo-container">
+            <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M192 128V96c0-17.7-14.3-32-32-32H96c-17.7 0-32 14.3-32 32v32H24C10.7 128 0 138.7 0 152v288c0 13.3 10.7 24 24 24h464c13.3 0 24-10.7 24-24V152c0-13.3-10.7-24-24-24h-40v-32c0-17.7-14.3-32-32-32h-64c-17.7 0-32 14.3-32 32v32H192zm224 0V96h64v32h-64zm-192 0V96h64v32h-64zM64 160h384v272H64V160z"/>
+                <path d="M256 224c-26.5 0-48 21.5-48 48s21.5 48 48 48 48-21.5 48-48-21.5-48-48-48zm84.9-42.4c-46.9-46.9-122.9-46.9-169.7 0l16.9 16.9c37.5-37.5 98.3-37.5 135.8 0l16.9-16.9zm-42.4 42.4c-23.4-23.4-61.4-23.4-84.9 0l16.9 16.9c14.1-14.1 36.9-14.1 51 0l16.9-16.9z"/>
+            </svg>
+            <span class="logo-text">SmartDapur</span>
+        </div>
+        
         <div class="header-actions">
             <button id="settingsBtn"><i class="fas fa-cog"></i></button>
         </div>
@@ -286,7 +307,7 @@
             <div class="section-header">Lokasi / Supermarket</div>
             <div id="smListSetting"></div>
             <button class="mini-input" id="addSMBtn" style="width:100%; margin-top:10px;">+ Tambah Lokasi</button>
-            <div class="brand-credit">Version 2.4 • <span>RashidZainol</span></div>
+            <div class="brand-credit">Version 2.5 • <span>RashidZainol</span></div>
         </div>
     </div>
     <div class="modal" id="smModal">
