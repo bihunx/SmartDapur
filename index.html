@@ -6,8 +6,8 @@
     <title>SmartDapur</title>
     
     <link rel="icon" type="image/png" href="assets/icon.png">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --primary: #FF5722;
@@ -19,6 +19,7 @@
             --success: #4caf50;
             --danger: #f44336;
             --danger-bg: #ffebee;
+            --info: #2196F3;
             --border: #e0e0e0;
         }
 
@@ -34,27 +35,7 @@
             background-color: var(--bg-gray);
             color: var(--text);
             padding-bottom: 80px; 
-            /* Safe area untuk iPhone */
             padding-top: env(safe-area-inset-top);
-        }
-
-        /* --- SPLASH SCREEN (Web Based) --- */
-        #webSplashScreen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: white;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s ease;
-        }
-
-        .splash-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Penuhi skrin */
         }
 
         /* --- HEADER --- */
@@ -73,10 +54,10 @@
         }
 
         .app-logo {
-            height: 40px; /* Saiz logo di header */
+            height: 40px;
             width: auto;
             object-fit: contain;
-            filter: brightness(0) invert(1); /* Jadikan putih jika logo asal gelap, atau buang line ini jika logo dah cantik */
+            filter: brightness(0) invert(1);
         }
         
         .header-actions button { background: none; border: none; font-size: 18px; color: white; }
@@ -103,6 +84,11 @@
 
         .shopping-list-info h3 { font-size: 16px; margin-bottom: 4px; }
         .shopping-list-info p { font-size: 12px; color: var(--text-light); }
+        
+        .budget-status { font-weight: 700; font-size: 13px; margin-top: 5px; }
+        .status-ok { color: var(--success); }
+        .status-over { color: var(--danger); }
+
         .chevron { color: #ccc; }
 
         .fab {
@@ -117,8 +103,43 @@
             background: white; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #eee;
         }
         .back-btn { border: none; background: none; font-size: 16px; color: var(--text); margin-right: 10px; }
-        .cart-title { font-weight: 600; font-size: 16px; flex: 1; }
-        .budget-pill { background: #eee; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 600; color: #555; }
+        .cart-title { font-weight: 600; font-size: 16px; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        
+        /* BARU: STATS ROW (3 BUBBLES) */
+        .cart-stats-row {
+            display: flex;
+            gap: 10px;
+            padding: 10px 15px;
+            background: white;
+            overflow-x: auto;
+            white-space: nowrap;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+            /* Hide scrollbar */
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .cart-stats-row::-webkit-scrollbar { display: none; }
+
+        .stat-bubble {
+            flex: 1;
+            padding: 8px 10px;
+            border-radius: 10px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 90px;
+        }
+        
+        .stat-label { font-size: 10px; opacity: 0.9; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 14px; font-weight: 800; }
+
+        /* Bubble Colors */
+        .bg-budget { background-color: var(--info); }
+        .bg-spent { background-color: var(--primary); }
+        .bg-safe { background-color: var(--success); }
+        .bg-danger { background-color: var(--danger); }
 
         .add-product-container { background: white; padding: 15px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .search-row { display: flex; gap: 10px; margin-bottom: 10px; }
@@ -179,10 +200,6 @@
 </head>
 <body>
 
-    <div id="webSplashScreen">
-        <img src="assets/splash.png" alt="SmartDapur Loading" class="splash-img">
-    </div>
-
     <header class="app-header">
         <img src="assets/logo.png" alt="SmartDapur" class="app-logo">
         <div class="header-actions">
@@ -205,8 +222,23 @@
         <div class="cart-header-strip">
             <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i></button>
             <div class="cart-title" id="currentListName">Nama Senarai</div>
-            <div class="budget-pill" id="budgetDisplay">Bajet: RM 0</div>
         </div>
+        
+        <div class="cart-stats-row">
+            <div class="stat-bubble bg-budget">
+                <span class="stat-label">Bajet</span>
+                <span class="stat-value" id="valBudget">RM 0</span>
+            </div>
+            <div class="stat-bubble bg-spent">
+                <span class="stat-label">Belanja</span>
+                <span class="stat-value" id="valSpent">RM 0</span>
+            </div>
+            <div class="stat-bubble bg-safe" id="bubbleBalance">
+                <span class="stat-label">Baki</span>
+                <span class="stat-value" id="valBalance">RM 0</span>
+            </div>
+        </div>
+
         <div class="add-product-container">
             <div class="search-row">
                 <div class="input-group">
@@ -254,7 +286,7 @@
             <div class="section-header">Lokasi / Supermarket</div>
             <div id="smListSetting"></div>
             <button class="mini-input" id="addSMBtn" style="width:100%; margin-top:10px;">+ Tambah Lokasi</button>
-            <div class="brand-credit">Version 2.2 • <span>RashidZainol</span></div>
+            <div class="brand-credit">Version 2.4 • <span>RashidZainol</span></div>
         </div>
     </div>
     <div class="modal" id="smModal">
@@ -270,18 +302,6 @@
     <input type="file" id="jsonFileInput" style="display:none;">
 
     <script>
-        // --- SPLASH SCREEN LOGIC ---
-        // Sembunyikan splash screen selepas 2.5 saat
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('webSplashScreen');
-                splash.style.opacity = '0';
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                }, 500);
-            }, 2500); // Masa splash screen (2500ms = 2.5 saat)
-        });
-
         // --- DATA ---
         let shoppingLists = JSON.parse(localStorage.getItem('shoppingLists')) || [];
         let currentListId = null;
@@ -325,12 +345,17 @@
                 const div = document.createElement('div');
                 div.className = 'shopping-list-card';
                 div.style.borderLeftColor = sm.color;
+                
+                // KIRA TOTAL BELANJA (BARANG YANG DAH DITANDA)
                 const total = list.items.filter(i => i.bought).reduce((acc, i) => acc + (i.price * i.quantity), 0);
+                const isOverBudget = total > list.budget;
+                const statusColor = isOverBudget ? 'status-over' : 'status-ok';
+
                 div.innerHTML = `
                     <div class="shopping-list-info">
                         <h3>${list.name}</h3>
                         <p>${new Date(list.date).toLocaleDateString('ms-MY')} • <span style="color:${sm.color}; font-weight:600;">${sm.name}</span></p>
-                        <p style="margin-top:5px; color:${total > list.budget ? 'red' : 'green'}">
+                        <p class="budget-status ${statusColor}">
                             Belanja: RM ${total.toFixed(2)} / RM ${list.budget.toFixed(2)}
                         </p>
                     </div>
@@ -346,19 +371,24 @@
             const list = shoppingLists.find(l => l.id === currentListId);
             if(!list) return showHome();
             document.getElementById('currentListName').textContent = list.name;
-            document.getElementById('budgetDisplay').textContent = `Bajet: RM ${list.budget.toFixed(2)}`;
+            
             const container = document.getElementById('cartItemsList');
             container.innerHTML = '';
+            
             const sortedItems = [...list.items].sort((a,b) => (a.bought === b.bought) ? 0 : a.bought ? 1 : -1);
+            
             if(sortedItems.length === 0) {
                 container.innerHTML = '<div style="text-align:center; padding:40px; color:#ccc;"><i class="fas fa-shopping-basket" style="font-size:40px; margin-bottom:10px;"></i><br>Bakul kosong</div>';
             }
+            
             let totalSpent = 0;
             let totalCount = list.items.length;
             let boughtCount = 0;
+            
             sortedItems.forEach((item) => {
                 const originalIndex = list.items.indexOf(item);
                 if(item.bought) { totalSpent += (item.price * item.quantity); boughtCount++; }
+                
                 const el = document.createElement('div');
                 if(item.isConfirmingDelete) {
                     el.className = 'cart-item';
@@ -384,6 +414,26 @@
                 }
                 container.appendChild(el);
             });
+            
+            // --- UPDATE 3 BUBBLES ---
+            const remaining = list.budget - totalSpent;
+
+            // 1. Set Nilai
+            document.getElementById('valBudget').textContent = `RM ${list.budget.toFixed(2)}`;
+            document.getElementById('valSpent').textContent = `RM ${totalSpent.toFixed(2)}`;
+            document.getElementById('valBalance').textContent = `RM ${remaining.toFixed(2)}`;
+
+            // 2. Set Warna Bubble Baki
+            const bubbleBalance = document.getElementById('bubbleBalance');
+            if (remaining < 0) {
+                // Negatif = Merah
+                bubbleBalance.className = 'stat-bubble bg-danger';
+            } else {
+                // Positif = Hijau
+                bubbleBalance.className = 'stat-bubble bg-safe';
+            }
+
+            // UPDATE BOTTOM BAR
             document.getElementById('footerTotal').textContent = `RM ${totalSpent.toFixed(2)}`;
             document.getElementById('footerStatus').textContent = `${boughtCount}/${totalCount} Selesai`;
             document.getElementById('footerStatus').style.color = (boughtCount === totalCount && totalCount > 0) ? 'var(--success)' : '#777';
