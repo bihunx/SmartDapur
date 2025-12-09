@@ -2,1839 +2,463 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Dapur Tracker - Enhanced</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SmartDapur</title>
+    
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #1e88e5;
-            --primary-light: #64b5f6;
-            --primary-dark: #0d47a1;
+            --primary: #FF5722;
+            --primary-dark: #E64A19;
             --white: #ffffff;
-            --light-gray: #f5f5f5;
-            --medium-gray: #e0e0e0;
-            --dark-gray: #757575;
+            --bg-gray: #f5f5f5;
             --text: #212121;
+            --text-light: #757575;
             --success: #4caf50;
-            --warning: #ff9800;
             --danger: #f44336;
-            --uber-black: #000000;
-            --uber-gray: #f6f6f6;
-            --uber-dark-gray: #6b6b6b;
+            --danger-bg: #ffebee;
+            --border: #e0e0e0;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--uber-gray);
+            background-color: var(--bg-gray);
             color: var(--text);
-            line-height: 1.6;
+            padding-bottom: 80px; 
+            /* Safe area untuk iPhone */
+            padding-top: env(safe-area-inset-top);
         }
 
-        /* Mobile First Styles */
-        .container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Styles for Mobile */
-        .sidebar {
-            width: 100%;
-            background-color: var(--white);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            z-index: 10;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            color: var(--primary);
-        }
-
-        .logo i {
-            font-size: 24px;
-            margin-right: 10px;
-        }
-
-        .logo h1 {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn i {
-            margin-right: 8px;
-        }
-
-        .btn-secondary {
-            background-color: var(--white);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--light-gray);
-        }
-
-        .lists-container {
-            margin-top: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        /* Swipe Container Styles */
-        .list-card-container {
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 10px;
-            border-radius: 8px;
-        }
-
-        .list-card {
-            background-color: var(--white);
-            border-left: 4px solid var(--primary);
-            border-radius: 8px;
-            padding: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            position: relative;
-            z-index: 2;
-        }
-
-        .list-card.swiping {
-            transition: none;
-        }
-
-        .list-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .list-card.active {
-            border-left: 4px solid var(--primary-dark);
-            background-color: var(--primary-light);
-            color: var(--white);
-        }
-
-        .list-card h3 {
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .list-card p {
-            font-size: 12px;
-            color: var(--dark-gray);
-        }
-
-        .list-card.active p {
-            color: var(--white);
-        }
-
-        .location-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 600;
-            color: white;
-        }
-
-        /* Swipe Actions */
-        .swipe-actions {
-            position: absolute;
-            top: 0;
-            right: -80px;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 0 10px;
-            transition: right 0.3s ease;
-            z-index: 1;
-        }
-
-        .swipe-actions.show {
-            right: 0;
-        }
-
-        .swipe-delete {
-            background-color: var(--danger);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .swipe-delete:hover {
-            background-color: #d32f2f;
-        }
-
-        /* Main Content Styles for Mobile */
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .list-header {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--medium-gray);
-        }
-
-        .list-header h2 {
-            font-size: 24px;
-            color: var(--primary-dark);
-        }
-
-        .location-display {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: var(--dark-gray);
-        }
-
-        .budget-info {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .budget-card {
-            background-color: var(--white);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            text-align: center;
-        }
-
-        .budget-card h3 {
-            font-size: 14px;
-            color: var(--dark-gray);
-            margin-bottom: 8px;
-        }
-
-        .budget-card p {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .total-spent {
-            color: var(--danger);
-        }
-
-        .remaining {
-            color: var(--success);
-        }
-
-        .items-container {
-            background-color: var(--white);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-        }
-
-        .add-item-form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 12px;
-            margin-bottom: 5px;
-            color: var(--dark-gray);
-        }
-
-        input, select {
-            padding: 10px;
-            border: 1px solid var(--medium-gray);
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .btn-small {
-            padding: 10px 15px;
-            width: 100%;
-            margin-top: 5px;
-        }
-
-        .items-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        /* Fixed Card Ratio 9:16 for Items */
-        .item-card {
-            background-color: var(--white);
-            border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid var(--primary);
-            display: flex;
-            flex-direction: column;
-            min-height: 120px; /* Fixed height for consistency */
-        }
-
-        .item-card.bought {
-            opacity: 0.7;
-            background-color: var(--light-gray);
-        }
-
-        .item-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-
-        .item-name {
-            font-weight: 500;
-            font-size: 14px;
-            flex: 1;
-        }
-
-        .item-actions {
-            display: flex;
-            gap: 5px;
-        }
-
-        .item-card-body {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .item-detail {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .item-label {
-            font-size: 10px;
-            color: var(--dark-gray);
-            margin-bottom: 2px;
-        }
-
-        .item-value {
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .item-total-section {
-            border-top: 1px solid var(--medium-gray);
-            padding-top: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .item-total {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--primary-dark);
-        }
-
-        .btn-icon {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--dark-gray);
-            font-size: 14px;
-            width: auto;
-            padding: 5px;
-        }
-
-        .btn-icon:hover {
-            color: var(--primary);
-            background: none;
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* Suggestion Styles for Mobile */
-        .suggestions {
-            position: relative;
-            background: white;
-            border: 1px solid var(--medium-gray);
-            border-radius: 6px;
-            max-height: 150px;
-            overflow-y: auto;
-            z-index: 10;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            display: none;
-            margin-top: 5px;
-        }
-
-        .suggestion-item {
-            padding: 8px 10px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .suggestion-item:hover {
-            background-color: var(--light-gray);
-        }
-
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-
-        .suggestion-name {
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .suggestion-price {
-            font-size: 11px;
-            color: var(--dark-gray);
-        }
-
-        /* Front Page Styles for Mobile */
-        .front-page {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-            padding: 30px 20px;
-        }
-
-        .add-list-btn-large {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            border: none;
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .add-list-btn-large i {
-            font-size: 36px;
-            margin-bottom: 8px;
-            margin-right: 0;
-        }
-
-        .add-list-btn-large:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Modal Styles for Mobile */
-        .modal {
-            display: none;
+        /* --- SPLASH SCREEN (Web Based) --- */
+        #webSplashScreen {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .splash-img {
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            object-fit: cover; /* Penuhi skrin */
+        }
+
+        /* --- HEADER --- */
+        .app-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            position: sticky;
+            top: 0;
             z-index: 100;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background-color: var(--white);
-            border-radius: 10px;
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .modal-header h3 {
-            font-size: 20px;
-            color: var(--primary-dark);
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--dark-gray);
-        }
-
-        /* Settings Styles */
-        .settings-container {
-            background-color: var(--white);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-bottom: 15px;
-        }
-
-        .settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .settings-header h3 {
-            font-size: 18px;
-            color: var(--primary-dark);
-        }
-
-        .supermarket-list {
-            margin-top: 15px;
-        }
-
-        .supermarket-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--medium-gray);
-        }
-
-        .supermarket-item:last-child {
-            border-bottom: none;
-        }
-
-        .supermarket-name {
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .supermarket-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            margin-right: 8px;
-            display: inline-block;
-        }
-
-        .supermarket-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .btn-danger:hover {
-            background-color: #d32f2f;
-        }
-
-        .export-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        /* About Section Styles */
-        .about-section {
-            background-color: var(--white);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .about-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .app-icon {
-            width: 60px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            margin-bottom: 10px;
         }
 
-        .app-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--primary-dark);
+        .app-logo {
+            height: 40px; /* Saiz logo di header */
+            width: auto;
+            object-fit: contain;
+            filter: brightness(0) invert(1); /* Jadikan putih jika logo asal gelap, atau buang line ini jika logo dah cantik */
+        }
+        
+        .header-actions button { background: none; border: none; font-size: 18px; color: white; }
+
+        /* --- SCREENS --- */
+        .screen { display: none; animation: fadeIn 0.3s ease; padding: 15px; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- HOME --- */
+        .welcome-banner {
+            background: white; border-radius: 10px; padding: 20px;
+            text-align: center; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .welcome-banner h2 { color: var(--primary); margin-bottom: 5px; }
+        
+        .section-header { font-size: 14px; font-weight: 600; color: var(--text-light); margin: 20px 0 10px 0; text-transform: uppercase; }
+
+        .shopping-list-card {
+            background: white; border-radius: 12px; padding: 15px;
+            margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 4px solid var(--text-light);
         }
 
-        .app-version {
-            font-size: 12px;
-            color: var(--dark-gray);
+        .shopping-list-info h3 { font-size: 16px; margin-bottom: 4px; }
+        .shopping-list-info p { font-size: 12px; color: var(--text-light); }
+        .chevron { color: #ccc; }
+
+        .fab {
+            position: fixed; bottom: 25px; right: 25px;
+            width: 56px; height: 56px; background-color: var(--primary); color: white;
+            border-radius: 50%; border: none; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center; z-index: 90;
         }
 
-        .credit-text {
-            font-size: 14px;
-            color: var(--text);
-            margin: 10px 0;
+        /* --- CART SCREEN --- */
+        .cart-header-strip {
+            background: white; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #eee;
         }
+        .back-btn { border: none; background: none; font-size: 16px; color: var(--text); margin-right: 10px; }
+        .cart-title { font-weight: 600; font-size: 16px; flex: 1; }
+        .budget-pill { background: #eee; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 600; color: #555; }
 
-        .developer-name {
-            font-weight: 600;
-            color: var(--primary);
-        }
+        .add-product-container { background: white; padding: 15px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .search-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .input-group { flex: 1; position: relative; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; padding: 0 10px; }
+        .input-group input { border: none; background: transparent; width: 100%; padding: 10px; font-size: 14px; }
+        .input-group input:focus { outline: none; }
 
-        .ai-credit {
-            font-size: 12px;
-            color: var(--dark-gray);
-            font-style: italic;
-        }
+        .price-qty-row { display: flex; gap: 10px; }
+        .mini-input { flex: 1; background: #f0f0f0; border: none; padding: 10px; border-radius: 8px; font-size: 14px; text-align: center; }
+        .btn-add-cart { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: 600; width: 100%; margin-top: 5px; }
 
-        .social-links {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-        }
+        .cart-item { background: white; margin-bottom: 2px; padding: 15px; display: flex; align-items: flex-start; position: relative; }
+        .cart-item.bought { background: #fafafa; }
+        .cart-item.bought .product-name { text-decoration: line-through; color: #999; }
+        .cart-item.bought .product-img { opacity: 0.5; }
 
-        .social-link {
-            color: var(--primary);
-            font-size: 16px;
-            transition: color 0.3s ease;
-        }
+        .check-container { padding-top: 5px; margin-right: 10px; }
+        .custom-check { width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .custom-check.checked { background: var(--success); border-color: var(--success); }
+        .custom-check i { color: white; font-size: 12px; display: none; }
+        .custom-check.checked i { display: block; }
 
-        .social-link:hover {
-            color: var(--primary-dark);
-        }
+        .product-img { width: 50px; height: 50px; background: #e0f7fa; color: #006064; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 12px; }
+        .product-details { flex: 1; }
+        .product-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; display: block; }
+        .product-price { color: var(--primary); font-size: 13px; font-weight: 700; }
+        
+        .qty-adjuster { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; margin-top: 5px; width: fit-content; }
+        .qty-btn { background: white; border: none; width: 25px; height: 25px; font-weight: bold; color: #555; }
+        .qty-display { padding: 0 8px; font-size: 12px; font-weight: 600; border-left: 1px solid #ddd; border-right: 1px solid #ddd; background: #fafafa; }
+        .delete-btn-mini { position: absolute; top: 15px; right: 15px; color: #ccc; border: none; background: none; font-size: 14px; }
 
-        /* Desktop Styles */
-        @media (min-width: 768px) {
-            .container {
-                flex-direction: row;
-            }
+        .cart-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 12px 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 99; padding-bottom: env(safe-area-inset-bottom); }
+        .total-label { font-size: 12px; color: #777; display: block; }
+        .total-amount { font-size: 18px; font-weight: 800; color: var(--primary); }
+        .checkout-status { font-size: 12px; font-weight: 600; color: var(--success); text-align: right; }
 
-            .sidebar {
-                width: 320px;
-                height: 100vh;
-                position: sticky;
-                top: 0;
-                overflow-y: auto;
-            }
+        .delete-confirm-box { background: var(--danger-bg); padding: 10px; margin-top: 5px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .del-text { color: var(--danger); font-size: 12px; font-weight: 600; }
+        .del-actions button { border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+        .btn-confirm { background: var(--danger); color: white; }
+        .btn-cancel { background: white; border: 1px solid #ccc !important; }
 
-            .lists-container {
-                max-height: calc(100vh - 200px);
-            }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: flex-end; }
+        .modal-content { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease; padding-bottom: 40px; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .close-btn { float: right; border: none; background: none; font-size: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { font-size: 12px; color: #777; display: block; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+        
+        .suggestions-list { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; border-top: none; z-index: 50; max-height: 150px; overflow-y: auto; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
+        .suggest-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
 
-            .add-item-form {
-                display: grid;
-                grid-template-columns: 2fr 1fr 1fr auto;
-                gap: 10px;
-            }
-
-            .btn-small {
-                width: auto;
-                margin-top: 0;
-            }
-
-            .budget-info {
-                flex-direction: row;
-            }
-
-            .suggestions {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                margin-top: 0;
-            }
-
-            .list-header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            /* Desktop Grid Layout for Items */
-            .items-list {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                gap: 15px;
-                max-height: none;
-                overflow-y: visible;
-            }
-
-            .item-card {
-                min-height: 140px;
-                transition: all 0.3s ease;
-            }
-
-            .item-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            }
-
-            /* Desktop Swipe Actions */
-            .list-card-container:hover .swipe-actions {
-                right: 0;
-            }
-            
-            .list-card-container:hover .list-card {
-                transform: translateX(-80px) !important;
-            }
-        }
-
-        /* Large Screen Styles */
-        @media (min-width: 1024px) {
-            .sidebar {
-                width: 350px;
-            }
-            
-            .main-content {
-                padding: 30px;
-            }
-
-            .items-list {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: 20px;
-            }
-
-            .item-card {
-                min-height: 150px;
-            }
-        }
-
-        /* Extra Large Screen Styles */
-        @media (min-width: 1440px) {
-            .items-list {
-                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            }
-        }
+        .brand-credit { text-align: center; margin-top: 30px; font-size: 12px; color: #aaa; padding-bottom: 20px;}
+        .brand-credit span { color: var(--primary); font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="logo">
-                <i class="fas fa-utensils"></i>
-                <h1>Smart Dapur Tracker</h1>
-            </div>
-            
-            <button class="btn" id="newListBtn">
-                <i class="fas fa-plus"></i> Senarai Baru
-            </button>
-            
-            <div class="lists-container" id="listsContainer">
-                <!-- Daftar list akan dimuat di sini -->
-            </div>
 
-            <button class="btn btn-secondary" id="settingsBtn">
-                <i class="fas fa-cog"></i> Settings
-            </button>
+    <div id="webSplashScreen">
+        <img src="assets/splash.png" alt="SmartDapur Loading" class="splash-img">
+    </div>
+
+    <header class="app-header">
+        <img src="assets/logo.png" alt="SmartDapur" class="app-logo">
+        <div class="header-actions">
+            <button id="settingsBtn"><i class="fas fa-cog"></i></button>
         </div>
-        
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Front Page (shown when no list is selected) -->
-            <div class="front-page" id="frontPage">
-                <button class="add-list-btn-large" id="newListBtnLarge">
-                    <i class="fas fa-plus"></i>
-                    <span>Senarai Baru</span>
-                </button>
-                <h2>Pilih atau Buat Senarai Belanja</h2>
-                <p>Klik butang di atas untuk membuat senarai belanja baru</p>
-            </div>
-            
-            <!-- List Details (hidden by default) -->
-            <div id="listDetails" class="hidden">
-                <div class="list-header">
-                    <h2 id="currentListName">Pilih Senarai Belanja</h2>
-                    <div class="location-display" id="locationDisplay">
-                        <!-- Lokasi akan ditampilkan di sini -->
-                    </div>
-                </div>
-                
-                <div class="budget-info">
-                    <div class="budget-card">
-                        <h3>Bajet</h3>
-                        <p id="budgetAmount">RM 0.00</p>
-                    </div>
-                    <div class="budget-card">
-                        <h3>Jumlah Belanja</h3>
-                        <p id="totalSpent" class="total-spent">RM 0.00</p>
-                    </div>
-                    <div class="budget-card">
-                        <h3>Baki</h3>
-                        <p id="remainingBudget" class="remaining">RM 0.00</p>
-                    </div>
-                </div>
-                
-                <div class="items-container">
-                    <div class="add-item-form">
-                        <div class="form-group">
-                            <label for="itemName">Nama Barang</label>
-                            <input type="text" id="itemName" placeholder="Contoh: Milo 1kg" autocomplete="off">
-                            <div class="suggestions" id="suggestions"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="itemPrice">Harga/Unit (RM)</label>
-                            <input type="number" id="itemPrice" min="0" step="0.01" placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label for="itemQuantity">Kuantiti</label>
-                            <input type="number" id="itemQuantity" min="1" value="1">
-                        </div>
-                        <button class="btn btn-small" id="addItemBtn">
-                            <i class="fas fa-plus"></i> Tambah
-                        </button>
-                    </div>
-                    
-                    <div class="items-list" id="itemsList">
-                        <!-- Item akan dimuat di sini -->
-                    </div>
+    </header>
+
+    <div id="homeScreen" class="screen active">
+        <div class="welcome-banner">
+            <h2>Daftar Belian</h2>
+            <p style="color:#777; font-size:13px;">Pilih senarai atau buat baru</p>
+        </div>
+        <div class="section-header">Senarai Saya</div>
+        <div id="listsContainer"></div>
+        <div class="brand-credit">Powered by <span>RashidZainol</span></div>
+        <button class="fab" id="newListBtn"><i class="fas fa-plus"></i></button>
+    </div>
+
+    <div id="cartScreen" class="screen" style="padding:0;">
+        <div class="cart-header-strip">
+            <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i></button>
+            <div class="cart-title" id="currentListName">Nama Senarai</div>
+            <div class="budget-pill" id="budgetDisplay">Bajet: RM 0</div>
+        </div>
+        <div class="add-product-container">
+            <div class="search-row">
+                <div class="input-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="itemName" placeholder="Cari / Tambah Produk..." autocomplete="off">
+                    <div class="suggestions-list" id="suggestions"></div>
                 </div>
             </div>
+            <div class="price-qty-row">
+                <input type="number" id="itemPrice" class="mini-input" placeholder="RM Harga" step="0.01">
+                <input type="number" id="itemQuantity" class="mini-input" placeholder="Qty" value="1">
+            </div>
+            <button class="btn-add-cart" id="addItemBtn">Masukkan Ke Bakul</button>
+        </div>
+        <div id="cartItemsList" style="padding-bottom: 80px;"></div>
+        <div class="cart-footer">
+            <div>
+                <span class="total-label">Jumlah Keseluruhan</span>
+                <span class="total-amount" id="footerTotal">RM 0.00</span>
+            </div>
+            <div class="checkout-status" id="footerStatus">0/0 Item</div>
         </div>
     </div>
-    
-    <!-- Modal untuk membuat senarai baru -->
+
     <div class="modal" id="newListModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Buat Senarai Baru</h3>
-                <button class="close-btn" id="closeNewListModal">&times;</button>
-            </div>
-            <div class="form-group">
-                <label for="listName">Nama Senarai</label>
-                <input type="text" id="listName" placeholder="Contoh: Belanja Bulanan">
-            </div>
-            <div class="form-group">
-                <label for="listDate">Tarikh</label>
-                <input type="date" id="listDate">
-            </div>
-            <div class="form-group">
-                <label for="listBudget">Bajet (RM)</label>
-                <input type="number" id="listBudget" min="0" step="0.01" placeholder="0.00">
-            </div>
-            <div class="form-group">
-                <label for="listLocation">Lokasi Belanja</label>
-                <select id="listLocation">
-                    <!-- Options akan diisi oleh JavaScript -->
-                </select>
-            </div>
-            <button class="btn" id="saveListBtn">Simpan Senarai</button>
+            <button class="close-btn" id="closeNewListModal">&times;</button>
+            <h3 style="margin-bottom:20px;">Buat Senarai Baru</h3>
+            <div class="form-group"><label>Nama Senarai</label><input type="text" id="listName" placeholder="Contoh: Barang Dapur Bulanan"></div>
+            <div class="form-group"><label>Tarikh</label><input type="date" id="listDate"></div>
+            <div class="form-group"><label>Bajet (RM)</label><input type="number" id="listBudget" placeholder="0.00"></div>
+            <div class="form-group"><label>Lokasi</label><select id="listLocation"></select></div>
+            <button class="btn-add-cart" id="saveListBtn">Cipta Senarai</button>
         </div>
     </div>
-    
-    <!-- Modal untuk settings -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Settings</h3>
-                <button class="close-btn" id="closeSettingsModal">&times;</button>
+            <button class="close-btn" id="closeSettingsModal">&times;</button>
+            <h3>Tetapan</h3>
+            <div class="section-header">Urus Data</div>
+            <div style="display:flex; gap:10px;">
+                <button class="mini-input" id="exportJSONBtn">Backup</button>
+                <button class="mini-input" id="importJSONBtn">Restore</button>
             </div>
-            <div class="settings-container">
-                <div class="settings-header">
-                    <h3>Kelola Supermarket</h3>
-                    <button class="btn btn-small" id="addSupermarketBtn">
-                        <i class="fas fa-plus"></i> Tambah
-                    </button>
-                </div>
-                <div class="supermarket-list" id="supermarketList">
-                    <!-- Daftar supermarket akan dimuat di sini -->
-                </div>
-                
-                <div class="settings-header" style="margin-top: 20px;">
-                    <h3>Import & Export Data</h3>
-                </div>
-                <div class="export-options">
-                    <button class="btn btn-secondary" id="exportCSVBtn">
-                        <i class="fas fa-file-export"></i> Export CSV
-                    </button>
-                    <button class="btn btn-secondary" id="exportJSONBtn">
-                        <i class="fas fa-file-code"></i> Export JSON
-                    </button>
-                    <button class="btn btn-secondary" id="importJSONBtn">
-                        <i class="fas fa-file-import"></i> Import JSON
-                    </button>
-                </div>
-                
-                <div class="settings-header" style="margin-top: 20px;">
-                    <h3>Cadangan Produk</h3>
-                </div>
-                <div id="productSuggestionsList">
-                    <!-- Daftar produk yang disarankan akan dimuat di sini -->
-                </div>
-
-                <!-- About Section -->
-                <div class="about-section">
-                    <div class="about-content">
-                        <div class="app-icon">
-                            <i class="fas fa-utensils"></i>
-                        </div>
-                        <div class="app-name">Smart Dapur Tracker</div>
-                        <div class="app-version">Versi 2.0</div>
-                        <div class="credit-text">
-                            Dibangunkan oleh <span class="developer-name">DhiasarahDotCom</span>
-                        </div>
-                        <div class="ai-credit">
-                            Dengan bantuan DeepSeek AI • 2025
-                        </div>
-                        <div class="social-links">
-                            <a href="#" class="social-link" title="Website">
-                                <i class="fas fa-globe"></i>
-                            </a>
-                            <a href="#" class="social-link" title="GitHub">
-                                <i class="fab fa-github"></i>
-                            </a>
-                            <a href="#" class="social-link" title="Email">
-                                <i class="fas fa-envelope"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="section-header">Lokasi / Supermarket</div>
+            <div id="smListSetting"></div>
+            <button class="mini-input" id="addSMBtn" style="width:100%; margin-top:10px;">+ Tambah Lokasi</button>
+            <div class="brand-credit">Version 2.2 • <span>RashidZainol</span></div>
         </div>
     </div>
-
-    <!-- Modal untuk tambah/ubah supermarket -->
-    <div class="modal" id="supermarketModal">
+    <div class="modal" id="smModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="supermarketModalTitle">Tambah Supermarket</h3>
-                <button class="close-btn" id="closeSupermarketModal">&times;</button>
-            </div>
-            <div class="form-group">
-                <label for="supermarketName">Nama Supermarket</label>
-                <input type="text" id="supermarketName" placeholder="Contoh: Emart">
-            </div>
-            <div class="form-group">
-                <label for="supermarketColor">Warna</label>
-                <input type="color" id="supermarketColor" value="#1e88e5">
-            </div>
-            <button class="btn" id="saveSupermarketBtn">Simpan</button>
+            <button class="close-btn" id="closeSMModal">&times;</button>
+            <h3>Tambah Lokasi</h3>
+            <div class="form-group"><label>Nama</label><input type="text" id="smName"></div>
+            <div class="form-group"><label>Warna</label><input type="color" id="smColor" value="#ff5722" style="height:40px;"></div>
+            <button class="btn-add-cart" id="saveSMBtn">Simpan</button>
         </div>
     </div>
 
-    <!-- Input file tersembunyi untuk import JSON -->
-    <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
-    
+    <input type="file" id="jsonFileInput" style="display:none;">
+
     <script>
-        // Data aplikasi
+        // --- SPLASH SCREEN LOGIC ---
+        // Sembunyikan splash screen selepas 2.5 saat
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('webSplashScreen');
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 500);
+            }, 2500); // Masa splash screen (2500ms = 2.5 saat)
+        });
+
+        // --- DATA ---
         let shoppingLists = JSON.parse(localStorage.getItem('shoppingLists')) || [];
         let currentListId = null;
         let productDatabase = JSON.parse(localStorage.getItem('productDatabase')) || {};
         let supermarkets = JSON.parse(localStorage.getItem('supermarkets')) || [
-            { id: 'emart', name: 'Emart', color: '#e53935' },
-            { id: 'everwin', name: 'Everwin', color: '#43a047' },
-            { id: 'everrise', name: 'Everrise', color: '#fb8c00' },
-            { id: 'lain', name: 'Lain-lain', color: '#757575' }
+            { id: 'aeon', name: 'Aeon', color: '#8E24AA' },
+            { id: 'lotus', name: 'Lotus', color: '#43A047' },
+            { id: 'mydin', name: 'Mydin', color: '#039BE5' },
+            { id: 'others', name: 'Lain-lain', color: '#757575' }
         ];
 
-        // Elemen DOM
-        const listsContainer = document.getElementById('listsContainer');
-        const frontPage = document.getElementById('frontPage');
-        const listDetails = document.getElementById('listDetails');
-        const currentListName = document.getElementById('currentListName');
-        const locationDisplay = document.getElementById('locationDisplay');
-        const budgetAmount = document.getElementById('budgetAmount');
-        const totalSpent = document.getElementById('totalSpent');
-        const remainingBudget = document.getElementById('remainingBudget');
-        const itemsList = document.getElementById('itemsList');
-        const newListBtn = document.getElementById('newListBtn');
-        const newListBtnLarge = document.getElementById('newListBtnLarge');
-        const newListModal = document.getElementById('newListModal');
-        const closeNewListModal = document.getElementById('closeNewListModal');
-        const saveListBtn = document.getElementById('saveListBtn');
-        const listNameInput = document.getElementById('listName');
-        const listDateInput = document.getElementById('listDate');
-        const listBudgetInput = document.getElementById('listBudget');
-        const listLocationInput = document.getElementById('listLocation');
-        const itemNameInput = document.getElementById('itemName');
-        const itemPriceInput = document.getElementById('itemPrice');
-        const itemQuantityInput = document.getElementById('itemQuantity');
-        const addItemBtn = document.getElementById('addItemBtn');
-        const suggestions = document.getElementById('suggestions');
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const closeSettingsModal = document.getElementById('closeSettingsModal');
-        const supermarketList = document.getElementById('supermarketList');
-        const addSupermarketBtn = document.getElementById('addSupermarketBtn');
-        const supermarketModal = document.getElementById('supermarketModal');
-        const closeSupermarketModal = document.getElementById('closeSupermarketModal');
-        const supermarketModalTitle = document.getElementById('supermarketModalTitle');
-        const supermarketName = document.getElementById('supermarketName');
-        const supermarketColor = document.getElementById('supermarketColor');
-        const saveSupermarketBtn = document.getElementById('saveSupermarketBtn');
-        const productSuggestionsList = document.getElementById('productSuggestionsList');
-        const exportCSVBtn = document.getElementById('exportCSVBtn');
-        const exportJSONBtn = document.getElementById('exportJSONBtn');
-        const importJSONBtn = document.getElementById('importJSONBtn');
-        const jsonFileInput = document.getElementById('jsonFileInput');
-
-        // Set tanggal default untuk input tanggal
-        listDateInput.valueAsDate = new Date();
-
-        // Event Listeners
-        newListBtn.addEventListener('click', () => {
-            newListModal.style.display = 'flex';
-        });
-
-        newListBtnLarge.addEventListener('click', () => {
-            newListModal.style.display = 'flex';
-        });
-
-        closeNewListModal.addEventListener('click', () => {
-            newListModal.style.display = 'none';
-        });
-
-        saveListBtn.addEventListener('click', createNewList);
-
-        addItemBtn.addEventListener('click', addItem);
-
-        settingsBtn.addEventListener('click', () => {
-            settingsModal.style.display = 'flex';
-            renderSupermarkets();
-            renderProductSuggestions();
-        });
-
-        closeSettingsModal.addEventListener('click', () => {
-            settingsModal.style.display = 'none';
-        });
-
-        addSupermarketBtn.addEventListener('click', () => {
-            supermarketModalTitle.textContent = 'Tambah Supermarket';
-            supermarketName.value = '';
-            supermarketColor.value = '#1e88e5';
-            supermarketModal.style.display = 'flex';
-        });
-
-        closeSupermarketModal.addEventListener('click', () => {
-            supermarketModal.style.display = 'none';
-        });
-
-        saveSupermarketBtn.addEventListener('click', saveSupermarket);
-
-        exportCSVBtn.addEventListener('click', exportToCSV);
-        exportJSONBtn.addEventListener('click', exportToJSON);
-        importJSONBtn.addEventListener('click', () => {
-            jsonFileInput.click();
-        });
-
-        jsonFileInput.addEventListener('change', importFromJSON);
-
-        // Event listener untuk input nama barang (suggestions)
-        itemNameInput.addEventListener('input', showSuggestions);
-        itemNameInput.addEventListener('focus', showSuggestions);
-
-        // Event listener untuk klik di luar suggestions
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.form-group')) {
-                suggestions.style.display = 'none';
-            }
-        });
-
-        // Fungsi untuk menampilkan suggestions
-        function showSuggestions() {
-            const input = itemNameInput.value.trim().toLowerCase();
-            suggestions.innerHTML = '';
-            
-            if (input.length < 2) {
-                suggestions.style.display = 'none';
-                return;
-            }
-            
-            // Cari produk yang sesuai
-            const matchedProducts = Object.keys(productDatabase)
-                .filter(productName => productName.toLowerCase().includes(input))
-                .slice(0, 5);
-            
-            if (matchedProducts.length === 0) {
-                suggestions.style.display = 'none';
-                return;
-            }
-            
-            // Tampilkan suggestions
-            matchedProducts.forEach(productName => {
-                const productData = productDatabase[productName];
-                const latestPrice = getLatestPrice(productData);
-                
-                const suggestionItem = document.createElement('div');
-                suggestionItem.className = 'suggestion-item';
-                suggestionItem.innerHTML = `
-                    <div class="suggestion-name">${productName}</div>
-                    <div class="suggestion-price">Harga terkini: RM ${latestPrice.toFixed(2)}</div>
-                `;
-                
-                suggestionItem.addEventListener('click', () => {
-                    itemNameInput.value = productName;
-                    itemPriceInput.value = latestPrice.toFixed(2);
-                    suggestions.style.display = 'none';
-                });
-                
-                suggestions.appendChild(suggestionItem);
-            });
-            
-            suggestions.style.display = 'block';
-        }
-
-        // Fungsi untuk mendapatkan harga terkini
-        function getLatestPrice(productData) {
-            if (!productData.prices || productData.prices.length === 0) return 0;
-            
-            const sortedPrices = [...productData.prices].sort((a, b) => 
-                new Date(b.date) - new Date(a.date)
-            );
-            
-            return sortedPrices[0].price;
-        }
-
-        // Fungsi untuk membuat senarai baru
-        function createNewList() {
-            const name = listNameInput.value.trim();
-            const date = listDateInput.value;
-            const budget = parseFloat(listBudgetInput.value);
-            const location = listLocationInput.value;
-
-            if (!name || !date || isNaN(budget) || budget <= 0) {
-                alert('Sila isi semua maklumat dengan betul.');
-                return;
-            }
-
-            const newList = {
-                id: Date.now().toString(),
-                name,
-                date,
-                budget,
-                location,
-                items: []
-            };
-
-            shoppingLists.push(newList);
-            saveToLocalStorage();
-            renderLists();
-            newListModal.style.display = 'none';
-            
-            // Reset form
-            listNameInput.value = '';
-            listDateInput.valueAsDate = new Date();
-            listBudgetInput.value = '';
-            
-            // Pilih senarai baru
-            selectList(newList.id);
-        }
-
-        // Fungsi untuk memaparkan senarai dengan swipe functionality
-        function renderLists() {
-            listsContainer.innerHTML = '';
-            
-            if (shoppingLists.length === 0) {
-                listsContainer.innerHTML = '<p style="text-align: center; color: var(--dark-gray);">Tiada senarai belanja. Klik "Senarai Baru" untuk membuat senarai pertama anda.</p>';
-                return;
-            }
-            
-            shoppingLists.forEach(list => {
-                const listCardContainer = document.createElement('div');
-                listCardContainer.className = 'list-card-container';
-                
-                const listCard = document.createElement('div');
-                listCard.className = `list-card ${currentListId === list.id ? 'active' : ''}`;
-                
-                const supermarket = supermarkets.find(s => s.id === list.location);
-                const locationText = supermarket ? supermarket.name : 'Lain-lain';
-                const locationColor = supermarket ? supermarket.color : '#757575';
-                
-                listCard.innerHTML = `
-                    <h3>${list.name}</h3>
-                    <p>${formatDate(list.date)} - RM ${list.budget.toFixed(2)}</p>
-                    <span class="location-badge" style="background-color: ${locationColor}">${locationText}</span>
-                `;
-                
-                // Swipe actions
-                const swipeActions = document.createElement('div');
-                swipeActions.className = 'swipe-actions';
-                swipeActions.innerHTML = `
-                    <button class="swipe-delete" title="Padam Senarai">
-                        <i class="fas fa-trash"></i> Padam
-                    </button>
-                `;
-                
-                listCardContainer.appendChild(listCard);
-                listCardContainer.appendChild(swipeActions);
-                
-                // Event listeners
-                listCard.addEventListener('click', () => selectList(list.id));
-                
-                // Swipe functionality
-                let startX = 0;
-                let currentX = 0;
-                let isSwiping = false;
-                
-                listCard.addEventListener('touchstart', (e) => {
-                    startX = e.touches[0].clientX;
-                    listCard.classList.add('swiping');
-                    isSwiping = true;
-                });
-                
-                listCard.addEventListener('touchmove', (e) => {
-                    if (!isSwiping) return;
-                    
-                    currentX = e.touches[0].clientX;
-                    const diff = startX - currentX;
-                    
-                    // Only allow swiping left (negative diff)
-                    if (diff > 0) {
-                        const translateX = Math.min(diff, 80);
-                        listCard.style.transform = `translateX(-${translateX}px)`;
-                        
-                        if (translateX > 30) {
-                            swipeActions.classList.add('show');
-                        }
-                    }
-                });
-                
-                listCard.addEventListener('touchend', () => {
-                    if (!isSwiping) return;
-                    
-                    const diff = startX - currentX;
-                    
-                    if (diff > 50) {
-                        // Swipe cukup jauh - kekalkan terbuka
-                        listCard.style.transform = 'translateX(-80px)';
-                    } else {
-                        // Swipe tak cukup jauh - tutup balik
-                        listCard.style.transform = 'translateX(0)';
-                        swipeActions.classList.remove('show');
-                    }
-                    
-                    listCard.classList.remove('swiping');
-                    isSwiping = false;
-                });
-                
-                // Click delete button
-                const deleteBtn = swipeActions.querySelector('.swipe-delete');
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteList(list.id);
-                });
-                
-                // Juga support untuk desktop (hover)
-                listCard.addEventListener('mouseenter', () => {
-                    listCard.style.transform = 'translateX(-80px)';
-                    swipeActions.classList.add('show');
-                });
-                
-                listCard.addEventListener('mouseleave', () => {
-                    listCard.style.transform = 'translateX(0)';
-                    swipeActions.classList.remove('show');
-                });
-                
-                listsContainer.appendChild(listCardContainer);
-            });
-        }
-
-        // Fungsi untuk memadam senarai
-        function deleteList(listId) {
-            if (confirm('Adakah anda pasti ingin memadam senarai ini? Tindakan ini tidak boleh dibatalkan.')) {
-                // Keluarkan senarai dari array
-                shoppingLists = shoppingLists.filter(list => list.id !== listId);
-                
-                // Jika senarai yang dipadam adalah senarai semasa, tunjukkan front page
-                if (currentListId === listId) {
-                    showFrontPage();
-                }
-                
-                saveToLocalStorage();
-                renderLists();
-            }
-        }
-
-        // Fungsi untuk memilih senarai
-        function selectList(id) {
-            currentListId = id;
-            renderLists();
-            renderCurrentList();
-            
-            // Tampilkan detail list dan sembunyikan front page
-            frontPage.classList.add('hidden');
-            listDetails.classList.remove('hidden');
-        }
-
-        // Fungsi untuk memaparkan senarai yang dipilih
-        function renderCurrentList() {
-            const list = shoppingLists.find(l => l.id === currentListId);
-            
-            if (!list) {
-                showFrontPage();
-                return;
-            }
-            
-            currentListName.textContent = list.name;
-            
-            // Tampilkan lokasi
-            const supermarket = supermarkets.find(s => s.id === list.location);
-            const locationText = supermarket ? supermarket.name : 'Lain-lain';
-            const locationColor = supermarket ? supermarket.color : '#757575';
-            
-            locationDisplay.innerHTML = `
-                <i class="fas fa-store" style="color: ${locationColor};"></i> ${locationText}
-            `;
-            
-            budgetAmount.textContent = `RM ${list.budget.toFixed(2)}`;
-            
-            // Kira jumlah belanja dan baki
-            const total = calculateTotalSpent(list);
-            totalSpent.textContent = `RM ${total.toFixed(2)}`;
-            remainingBudget.textContent = `RM ${(list.budget - total).toFixed(2)}`;
-            
-            // Paparkan item
-            renderItems(list.items);
-        }
-
-        // Fungsi untuk mengira jumlah belanja
-        function calculateTotalSpent(list) {
-            return list.items
-                .filter(item => item.bought)
-                .reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        }
-
-        // Fungsi untuk memaparkan item (menggunakan card layout)
-        function renderItems(items) {
-            itemsList.innerHTML = '';
-            
-            if (items.length === 0) {
-                itemsList.innerHTML = '<p style="text-align: center; color: var(--dark-gray);">Tiada item dalam senarai ini. Tambah item menggunakan borang di atas.</p>';
-                return;
-            }
-            
-            items.forEach((item, index) => {
-                const itemCard = document.createElement('div');
-                itemCard.className = `item-card ${item.bought ? 'bought' : ''}`;
-                
-                const total = item.price * item.quantity;
-                
-                itemCard.innerHTML = `
-                    <div class="item-card-header">
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-actions">
-                            <button class="btn-icon" title="Sejarah Harga">
-                                <i class="fas fa-chart-line"></i>
-                            </button>
-                            <button class="btn-icon" title="Keluarkan">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="item-card-body">
-                        <div class="item-detail">
-                            <span class="item-label">Harga/Unit</span>
-                            <span class="item-value">RM ${item.price.toFixed(2)}</span>
-                        </div>
-                        <div class="item-detail">
-                            <span class="item-label">Kuantiti</span>
-                            <span class="item-value">${item.quantity}</span>
-                        </div>
-                    </div>
-                    <div class="item-total-section">
-                        <div>
-                            <input type="checkbox" class="item-checkbox" ${item.bought ? 'checked' : ''}>
-                            <span style="font-size: 11px; color: var(--dark-gray); margin-left: 5px;">Dibeli</span>
-                        </div>
-                        <div class="item-total">RM ${total.toFixed(2)}</div>
-                    </div>
-                `;
-                
-                // Event listeners untuk checkbox
-                const checkbox = itemCard.querySelector('.item-checkbox');
-                checkbox.addEventListener('change', () => toggleBought(index));
-                
-                // Event listeners untuk butang
-                const buttons = itemCard.querySelectorAll('.btn-icon');
-                buttons[0].addEventListener('click', () => showPriceHistory(item.name));
-                buttons[1].addEventListener('click', () => removeItem(index));
-                
-                itemsList.appendChild(itemCard);
-            });
-        }
-
-        // Fungsi untuk menambah item (FIXED - GUNA TARIKH SENARAI)
-        function addItem() {
-            const name = itemNameInput.value.trim();
-            const price = parseFloat(itemPriceInput.value);
-            const quantity = parseInt(itemQuantityInput.value);
-            
-            if (!name || isNaN(price) || price < 0 || isNaN(quantity) || quantity < 1) {
-                alert('Sila isi semua maklumat dengan betul.');
-                return;
-            }
-            
-            const list = shoppingLists.find(l => l.id === currentListId);
-            if (!list) return;
-            
-            // PASTI dapat tarikh dari senarai belanja
-            const listDate = list.date;
-            console.log('✅ GUNA TARIKH SENARAI:', listDate, 'Untuk item:', name);
-            
-            // Tambah item ke senarai
-            list.items.push({
-                name,
-                price,
-                quantity,
-                bought: false
-            });
-            
-            // PASTI gunakan tarikh senarai belanja
-            updateProductDatabase(name, price, list.location, listDate);
-            
-            saveToLocalStorage();
-            renderCurrentList();
-            
-            // Reset form
-            itemNameInput.value = '';
-            itemPriceInput.value = '';
-            itemQuantityInput.value = '1';
-            suggestions.style.display = 'none';
-        }
-
-        // Fungsi untuk mengemas kini pangkalan data produk (FIXED - GUNA TARIKH SENARAI)
-        function updateProductDatabase(name, price, location, date) {
-            // PASTI gunakan tarikh yang diberikan (tarikh senarai belanja)
-            if (!date) {
-                console.error('❌ ERROR: Tarikh tidak diberikan!');
-                return;
-            }
-            
-            const priceDate = date;
-            console.log('💾 Simpan dengan tarikh:', priceDate);
-            
-            if (!productDatabase[name]) {
-                productDatabase[name] = {
-                    name,
-                    prices: []
-                };
-            }
-            
-            // Tambah harga baru dengan tarikh senarai belanja
-            productDatabase[name].prices.push({
-                price,
-                date: priceDate,
-                location
-            });
-            
-            // Simpan ke localStorage
-            localStorage.setItem('productDatabase', JSON.stringify(productDatabase));
-        }
-
-        // Fungsi untuk menandakan item sebagai dibeli/tidak
-        function toggleBought(index) {
-            const list = shoppingLists.find(l => l.id === currentListId);
-            if (!list) return;
-            
-            list.items[index].bought = !list.items[index].bought;
-            saveToLocalStorage();
-            renderCurrentList();
-        }
-
-        // Fungsi untuk mengeluarkan item
-        function removeItem(index) {
-            const list = shoppingLists.find(l => l.id === currentListId);
-            if (!list) return;
-            
-            if (confirm('Adakah anda pasti ingin mengeluarkan item ini?')) {
-                list.items.splice(index, 1);
-                saveToLocalStorage();
-                renderCurrentList();
-            }
-        }
-
-        // Fungsi untuk memaparkan sejarah harga (AUTO SORT HARGA TERTINGGI)
-        function showPriceHistory(itemName) {
-            if (!productDatabase[itemName]) {
-                alert('Tiada sejarah harga untuk produk ini.');
-                return;
-            }
-            
-            const prices = [...productDatabase[itemName].prices];
-            
-            // DEBUG: Tunjuk semua tarikh dalam console
-            console.log('📊 Semua rekod untuk', itemName + ':', prices);
-            
-            // AUTO SORT: Harga Tertinggi dulu
-            prices.sort((a, b) => b.price - a.price);
-            
-            let historyText = `🕒 SEJARAH HARGA: ${itemName}\n`;
-            historyText += `📊 Disusun: Harga Tertinggi dulu\n\n`;
-            
-            prices.forEach((priceData, index) => {
-                const supermarket = supermarkets.find(s => s.id === priceData.location);
-                const locationText = supermarket ? supermarket.name : 'Lain-lain';
-                const dateFormatted = formatDate(priceData.date);
-                
-                // Tanda untuk ranking
-                let rankMark = '';
-                if (index === 0) rankMark = ' 🥇 HARGA TERTINGGI';
-                else if (index === 1) rankMark = ' 🥈';
-                else if (index === 2) rankMark = ' 🥉';
-                
-                historyText += `${dateFormatted} - RM ${priceData.price.toFixed(2)} (${locationText})${rankMark}\n`;
-            });
-            
-            // Tambah statistik
-            const highestPrice = Math.max(...prices.map(p => p.price));
-            const lowestPrice = Math.min(...prices.map(p => p.price));
-            const averagePrice = prices.reduce((sum, p) => sum + p.price, 0) / prices.length;
-            
-            historyText += `\n--- 📈 STATISTIK HARGA ---\n`;
-            historyText += `🥇 Harga Tertinggi: RM ${highestPrice.toFixed(2)}\n`;
-            historyText += `📉 Harga Terendah: RM ${lowestPrice.toFixed(2)}\n`;
-            historyText += `📊 Harga Purata: RM ${averagePrice.toFixed(2)}\n`;
-            historyText += `🔄 Bilangan Rekod: ${prices.length}`;
-            
-            // Tunjukkan perbezaan harga jika ada lebih dari 1 rekod
-            if (prices.length > 1) {
-                historyText += `\n📅 Julat Tarikh: ${formatDate(prices[prices.length-1].date)} - ${formatDate(prices[0].date)}`;
-                historyText += `\n💰 Perbezaan Harga: RM ${(highestPrice - lowestPrice).toFixed(2)}`;
-            }
-            
-            alert(historyText);
-        }
-
-        // Fungsi untuk memaparkan supermarket
-        function renderSupermarkets() {
-            supermarketList.innerHTML = '';
-            
-            supermarkets.forEach((supermarket, index) => {
-                const supermarketItem = document.createElement('div');
-                supermarketItem.className = 'supermarket-item';
-                supermarketItem.innerHTML = `
-                    <div>
-                        <span class="supermarket-color" style="background-color: ${supermarket.color};"></span>
-                        <span class="supermarket-name">${supermarket.name}</span>
-                    </div>
-                    <div class="supermarket-actions">
-                        <button class="btn-danger delete-supermarket" data-index="${index}">Padam</button>
-                    </div>
-                `;
-                
-                supermarketList.appendChild(supermarketItem);
-            });
-            
-            // Event listeners untuk butang padam
-            document.querySelectorAll('.delete-supermarket').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const index = parseInt(e.target.getAttribute('data-index'));
-                    deleteSupermarket(index);
-                });
-            });
-        }
-
-        // Fungsi untuk memaparkan cadangan produk di settings
-        function renderProductSuggestions() {
-            productSuggestionsList.innerHTML = '';
-            
-            if (Object.keys(productDatabase).length === 0) {
-                productSuggestionsList.innerHTML = '<p style="text-align: center; color: var(--dark-gray);">Tiada cadangan produk. Produk akan muncul di sini setelah anda menambah item ke senarai belanja.</p>';
-                return;
-            }
-            
-            // Ambil 10 produk terbaru
-            const recentProducts = Object.keys(productDatabase)
-                .slice(-10)
-                .reverse();
-            
-            recentProducts.forEach(productName => {
-                const productData = productDatabase[productName];
-                const latestPrice = getLatestPrice(productData);
-                
-                const productItem = document.createElement('div');
-                productItem.className = 'supermarket-item';
-                productItem.innerHTML = `
-                    <div>
-                        <span class="supermarket-name">${productName}</span>
-                    </div>
-                    <div>
-                        <span>RM ${latestPrice.toFixed(2)}</span>
-                    </div>
-                `;
-                
-                productSuggestionsList.appendChild(productItem);
-            });
-        }
-
-        // Fungsi untuk menyimpan supermarket
-        function saveSupermarket() {
-            const name = supermarketName.value.trim();
-            const color = supermarketColor.value;
-            
-            if (!name) {
-                alert('Sila masukkan nama supermarket.');
-                return;
-            }
-            
-            const id = name.toLowerCase().replace(/\s+/g, '-');
-            
-            // Semak jika ID sudah wujud
-            if (supermarkets.find(s => s.id === id)) {
-                alert('Supermarket dengan nama ini sudah wujud.');
-                return;
-            }
-            
-            supermarkets.push({
-                id,
-                name,
-                color
-            });
-            
-            saveToLocalStorage();
-            renderSupermarkets();
-            supermarketModal.style.display = 'none';
-            
-            // Kemas kini pilihan lokasi
-            updateLocationOptions();
-        }
-
-        // Fungsi untuk memadam supermarket
-        function deleteSupermarket(index) {
-            if (supermarkets.length <= 1) {
-                alert('Anda mesti mempunyai sekurang-kurangnya satu supermarket.');
-                return;
-            }
-            
-            if (confirm('Adakah anda pasti ingin memadam supermarket ini?')) {
-                supermarkets.splice(index, 1);
-                saveToLocalStorage();
-                renderSupermarkets();
-                updateLocationOptions();
-            }
-        }
-
-        // Fungsi untuk mengemas kini pilihan lokasi
-        function updateLocationOptions() {
-            listLocationInput.innerHTML = '';
-            
-            supermarkets.forEach(supermarket => {
-                const option = document.createElement('option');
-                option.value = supermarket.id;
-                option.textContent = supermarket.name;
-                listLocationInput.appendChild(option);
-            });
-        }
-
-        // Fungsi untuk mengeksport ke CSV
-        function exportToCSV() {
-            if (shoppingLists.length === 0) {
-                alert('Tiada data untuk dieksport.');
-                return;
-            }
-            
-            let csvContent = "Nama Senarai,Tarikh,Bajet,Lokasi,Item,Harga,Kuantiti,Dibeli\n";
-            
-            shoppingLists.forEach(list => {
-                const supermarket = supermarkets.find(s => s.id === list.location);
-                const locationName = supermarket ? supermarket.name : 'Lain-lain';
-                
-                if (list.items.length === 0) {
-                    csvContent += `"${list.name}","${list.date}",${list.budget},"${locationName}",,,,\n`;
-                } else {
-                    list.items.forEach((item, index) => {
-                        if (index === 0) {
-                            csvContent += `"${list.name}","${list.date}",${list.budget},"${locationName}","${item.name}",${item.price},${item.quantity},${item.bought ? 'Ya' : 'Tidak'}\n`;
-                        } else {
-                            csvContent += `,,,,"${item.name}",${item.price},${item.quantity},${item.bought ? 'Ya' : 'Tidak'}\n`;
-                        }
-                    });
-                }
-            });
-            
-            downloadFile(csvContent, 'senarai-belanja.csv', 'text/csv');
-        }
-
-        // Fungsi untuk mengeksport ke JSON
-        function exportToJSON() {
-            if (shoppingLists.length === 0) {
-                alert('Tiada data untuk dieksport.');
-                return;
-            }
-            
-            const data = {
-                shoppingLists,
-                supermarkets,
-                productDatabase,
-                exportDate: new Date().toISOString()
-            };
-            
-            const jsonContent = JSON.stringify(data, null, 2);
-            downloadFile(jsonContent, 'senarai-belanja.json', 'application/json');
-        }
-
-        // Fungsi untuk mengimport dari JSON
-        function importFromJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    if (confirm('Import data akan menggantikan semua data semasa. Teruskan?')) {
-                        if (data.shoppingLists) shoppingLists = data.shoppingLists;
-                        if (data.supermarkets) supermarkets = data.supermarkets;
-                        if (data.productDatabase) productDatabase = data.productDatabase;
-                        
-                        saveToLocalStorage();
-                        renderLists();
-                        updateLocationOptions();
-                        
-                        if (currentListId) {
-                            renderCurrentList();
-                        }
-                        
-                        alert('Data berjaya diimport.');
-                    }
-                } catch (error) {
-                    alert('Ralat ketika mengimport fail. Pastikan fail JSON adalah sah.');
-                    console.error(error);
-                }
-                
-                // Reset input file
-                event.target.value = '';
-            };
-            
-            reader.readAsText(file);
-        }
-
-        // Fungsi untuk memuat turun fail
-        function downloadFile(content, fileName, contentType) {
-            const blob = new Blob([content], { type: contentType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Fungsi untuk menyimpan data ke localStorage
-        function saveToLocalStorage() {
-            localStorage.setItem('shoppingLists', JSON.stringify(shoppingLists));
-            localStorage.setItem('supermarkets', JSON.stringify(supermarkets));
-            localStorage.setItem('productDatabase', JSON.stringify(productDatabase));
-        }
-
-        // Fungsi untuk memformat tanggal
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            });
-        }
-
-        // Fungsi untuk kembali ke halaman depan
-        function showFrontPage() {
-            currentListId = null;
-            frontPage.classList.remove('hidden');
-            listDetails.classList.add('hidden');
-            renderLists();
-        }
-
-        // Inisialisasi aplikasi
-        function init() {
-            updateLocationOptions();
-            renderLists();
-            showFrontPage();
-        }
-
-        // Jalankan inisialisasi
+        // --- INIT ---
+        document.getElementById('listDate').valueAsDate = new Date();
         init();
+
+        // --- NAVIGATION ---
+        function showHome() {
+            document.getElementById('cartScreen').classList.remove('active');
+            document.getElementById('homeScreen').classList.add('active');
+            currentListId = null;
+            renderLists();
+        }
+        function showCart(id) {
+            currentListId = id;
+            document.getElementById('homeScreen').classList.remove('active');
+            document.getElementById('cartScreen').classList.add('active');
+            renderCart();
+        }
+        document.getElementById('backBtn').onclick = showHome;
+
+        // --- HOME LOGIC ---
+        function renderLists() {
+            const container = document.getElementById('listsContainer');
+            container.innerHTML = '';
+            if(shoppingLists.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#ccc; margin-top:20px;">Tiada senarai.</p>';
+                return;
+            }
+            shoppingLists.slice().reverse().forEach(list => {
+                const sm = supermarkets.find(s => s.id === list.location) || {name:'Lain', color:'#777'};
+                const div = document.createElement('div');
+                div.className = 'shopping-list-card';
+                div.style.borderLeftColor = sm.color;
+                const total = list.items.filter(i => i.bought).reduce((acc, i) => acc + (i.price * i.quantity), 0);
+                div.innerHTML = `
+                    <div class="shopping-list-info">
+                        <h3>${list.name}</h3>
+                        <p>${new Date(list.date).toLocaleDateString('ms-MY')} • <span style="color:${sm.color}; font-weight:600;">${sm.name}</span></p>
+                        <p style="margin-top:5px; color:${total > list.budget ? 'red' : 'green'}">
+                            Belanja: RM ${total.toFixed(2)} / RM ${list.budget.toFixed(2)}
+                        </p>
+                    </div>
+                    <i class="fas fa-chevron-right chevron"></i>
+                `;
+                div.onclick = () => showCart(list.id);
+                container.appendChild(div);
+            });
+        }
+
+        // --- CART LOGIC ---
+        function renderCart() {
+            const list = shoppingLists.find(l => l.id === currentListId);
+            if(!list) return showHome();
+            document.getElementById('currentListName').textContent = list.name;
+            document.getElementById('budgetDisplay').textContent = `Bajet: RM ${list.budget.toFixed(2)}`;
+            const container = document.getElementById('cartItemsList');
+            container.innerHTML = '';
+            const sortedItems = [...list.items].sort((a,b) => (a.bought === b.bought) ? 0 : a.bought ? 1 : -1);
+            if(sortedItems.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:#ccc;"><i class="fas fa-shopping-basket" style="font-size:40px; margin-bottom:10px;"></i><br>Bakul kosong</div>';
+            }
+            let totalSpent = 0;
+            let totalCount = list.items.length;
+            let boughtCount = 0;
+            sortedItems.forEach((item) => {
+                const originalIndex = list.items.indexOf(item);
+                if(item.bought) { totalSpent += (item.price * item.quantity); boughtCount++; }
+                const el = document.createElement('div');
+                if(item.isConfirmingDelete) {
+                    el.className = 'cart-item';
+                    el.innerHTML = `
+                        <div style="width:100%;">
+                            <div class="product-name">${item.name}</div>
+                            <div class="delete-confirm-box">
+                                <span class="del-text">Padam dari bakul?</span>
+                                <div class="del-actions"><button class="btn-confirm" onclick="confirmDel(${originalIndex})">Ya</button><button class="btn-cancel" onclick="cancelDel(${originalIndex})">Batal</button></div>
+                            </div>
+                        </div>`;
+                } else {
+                    el.className = `cart-item ${item.bought ? 'bought' : ''}`;
+                    el.innerHTML = `
+                        <div class="check-container"><div class="custom-check ${item.bought ? 'checked' : ''}" onclick="toggleCheck(${originalIndex})"><i class="fas fa-check"></i></div></div>
+                        <div class="product-img"><i class="fas fa-${getItemIcon(item.name)}"></i></div>
+                        <div class="product-details">
+                            <span class="product-name">${item.name}</span>
+                            <span class="product-price">RM ${(item.price * item.quantity).toFixed(2)}</span>
+                            <div class="qty-adjuster" onclick="event.stopPropagation()"><button class="qty-btn" onclick="updateQty(${originalIndex}, -1)">-</button><span class="qty-display">${item.quantity}</span><button class="qty-btn" onclick="updateQty(${originalIndex}, 1)">+</button></div>
+                        </div>
+                        <button class="delete-btn-mini" onclick="askDel(${originalIndex})"><i class="fas fa-trash"></i></button>`;
+                }
+                container.appendChild(el);
+            });
+            document.getElementById('footerTotal').textContent = `RM ${totalSpent.toFixed(2)}`;
+            document.getElementById('footerStatus').textContent = `${boughtCount}/${totalCount} Selesai`;
+            document.getElementById('footerStatus').style.color = (boughtCount === totalCount && totalCount > 0) ? 'var(--success)' : '#777';
+        }
+
+        function getItemIcon(name) {
+            name = name.toLowerCase();
+            if(name.includes('ayam') || name.includes('daging')) return 'drumstick-bite';
+            if(name.includes('ikan')) return 'fish';
+            if(name.includes('sayur') || name.includes('salad')) return 'carrot';
+            if(name.includes('roti')) return 'bread-slice';
+            if(name.includes('susu') || name.includes('air')) return 'bottle-water';
+            if(name.includes('sabun')) return 'pump-soap';
+            if(name.includes('epal') || name.includes('buah')) return 'apple-alt';
+            return 'box-open';
+        }
+
+        document.getElementById('addItemBtn').onclick = () => {
+            const name = document.getElementById('itemName').value.trim();
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const qty = parseInt(document.getElementById('itemQuantity').value);
+            if(!name || isNaN(price) || isNaN(qty) || qty < 1) return alert('Isi maklumat produk');
+            const list = shoppingLists.find(l => l.id === currentListId);
+            const existIdx = list.items.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+            if(existIdx !== -1) { list.items[existIdx].quantity += qty; list.items[existIdx].price = price; list.items[existIdx].bought = false; }
+            else { list.items.push({name, price, quantity:qty, bought:false}); }
+            updateDB(name, price, list.location); save(); renderCart();
+            document.getElementById('itemName').value = ''; document.getElementById('itemPrice').value = ''; document.getElementById('itemQuantity').value = 1; document.getElementById('suggestions').style.display = 'none';
+        }
+
+        window.toggleCheck = (idx) => { const list = shoppingLists.find(l => l.id === currentListId); list.items[idx].bought = !list.items[idx].bought; save(); renderCart(); }
+        window.updateQty = (idx, change) => { const list = shoppingLists.find(l => l.id === currentListId); const item = list.items[idx]; const newQty = item.quantity + change; if(newQty <= 0) { item.isConfirmingDelete = true; } else { item.quantity = newQty; item.isConfirmingDelete = false; if(change > 0) item.bought = false; } save(); renderCart(); }
+        window.askDel = (idx) => { const list = shoppingLists.find(l => l.id === currentListId); list.items[idx].isConfirmingDelete = true; renderCart(); }
+        window.confirmDel = (idx) => { const list = shoppingLists.find(l => l.id === currentListId); list.items.splice(idx, 1); save(); renderCart(); }
+        window.cancelDel = (idx) => { const list = shoppingLists.find(l => l.id === currentListId); list.items[idx].isConfirmingDelete = false; if(list.items[idx].quantity <= 0) list.items[idx].quantity = 1; renderCart(); }
+
+        const sInput = document.getElementById('itemName'); const sList = document.getElementById('suggestions');
+        sInput.oninput = () => {
+            const val = sInput.value.toLowerCase().trim(); sList.innerHTML = ''; if(val.length < 2) return sList.style.display = 'none';
+            const matches = Object.keys(productDatabase).filter(k => k.toLowerCase().includes(val)).slice(0,5);
+            if(matches.length === 0) return sList.style.display = 'none';
+            matches.forEach(k => {
+                const data = productDatabase[k]; const lastPrice = data.prices.sort((a,b)=>new Date(b.date)-new Date(a.date))[0].price;
+                const div = document.createElement('div'); div.className = 'suggest-item'; div.innerHTML = `${data.name} <span style="float:right; color:var(--primary);">RM ${lastPrice.toFixed(2)}</span>`;
+                div.onclick = () => { sInput.value = data.name; document.getElementById('itemPrice').value = lastPrice.toFixed(2); sList.style.display = 'none'; };
+                sList.appendChild(div);
+            }); sList.style.display = 'block';
+        }
+        document.onclick = (e) => { if(!e.target.closest('.input-group')) sList.style.display = 'none'; }
+
+        function updateDB(name, price, loc) { if(!productDatabase[name]) productDatabase[name] = {name, prices:[]}; productDatabase[name].prices.push({price, date:new Date(), location:loc}); localStorage.setItem('productDatabase', JSON.stringify(productDatabase)); }
+
+        const newListModal = document.getElementById('newListModal');
+        document.getElementById('newListBtn').onclick = () => { updateLocSelect(); newListModal.style.display = 'flex'; }
+        document.getElementById('closeNewListModal').onclick = () => newListModal.style.display = 'none';
+        document.getElementById('saveListBtn').onclick = () => { const name = document.getElementById('listName').value; const budget = parseFloat(document.getElementById('listBudget').value); const loc = document.getElementById('listLocation').value; const date = document.getElementById('listDate').value; if(!name || isNaN(budget)) return; shoppingLists.push({id:Date.now().toString(), name, budget, location:loc, date, items:[]}); save(); showHome(); newListModal.style.display = 'none'; }
+
+        const setModal = document.getElementById('settingsModal');
+        document.getElementById('settingsBtn').onclick = () => { renderSMSetting(); setModal.style.display = 'flex'; }
+        document.getElementById('closeSettingsModal').onclick = () => setModal.style.display = 'none';
+        function renderSMSetting() { const div = document.getElementById('smListSetting'); div.innerHTML = ''; supermarkets.forEach((s, i) => { if(s.id === 'others') return; div.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span><b style="color:${s.color}">●</b> ${s.name}</span><button onclick="delSM(${i})" style="color:red; border:none; background:none;">X</button></div>`; }); }
+        window.delSM = (i) => { if(confirm('Padam?')) { supermarkets.splice(i, 1); save(); renderSMSetting(); } }
+
+        const smModal = document.getElementById('smModal');
+        document.getElementById('addSMBtn').onclick = () => smModal.style.display = 'flex';
+        document.getElementById('closeSMModal').onclick = () => smModal.style.display = 'none';
+        document.getElementById('saveSMBtn').onclick = () => { const name = document.getElementById('smName').value; const color = document.getElementById('smColor').value; if(!name) return; supermarkets.push({id:name.toLowerCase().replace(/\s/g,''), name, color}); save(); smModal.style.display = 'none'; renderSMSetting(); }
+
+        function updateLocSelect() { const s = document.getElementById('listLocation'); s.innerHTML = ''; supermarkets.forEach(sm => s.innerHTML += `<option value="${sm.id}">${sm.name}</option>`); }
+        function save() { localStorage.setItem('shoppingLists', JSON.stringify(shoppingLists)); localStorage.setItem('supermarkets', JSON.stringify(supermarkets)); }
+        
+        document.getElementById('exportJSONBtn').onclick = () => { const blob = new Blob([JSON.stringify({shoppingLists, supermarkets, productDatabase})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'smartdapur.json'; a.click(); }
+        document.getElementById('importJSONBtn').onclick = () => document.getElementById('jsonFileInput').click();
+        document.getElementById('jsonFileInput').onchange = (e) => { const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); if(confirm('Restore data?')) { shoppingLists = d.shoppingLists; supermarkets = d.supermarkets; productDatabase = d.productDatabase; save(); location.reload(); } }; r.readAsText(e.target.files[0]); }
+        function init() { updateLocSelect(); renderLists(); }
     </script>
 </body>
 </html>
