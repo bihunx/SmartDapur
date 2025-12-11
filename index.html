@@ -34,10 +34,33 @@
         body {
             background-color: var(--bg-gray);
             color: var(--text);
-            /* FIX 1: Jarak bawah mengambil kira Safe Area (Navigation Bar) + Tinggi Footer */
-            padding-bottom: calc(100px + env(safe-area-inset-bottom)); 
-            /* FIX 2: Jarak atas mengambil kira Status Bar */
+            padding-bottom: 80px; 
             padding-top: env(safe-area-inset-top);
+        }
+
+        /* --- TOAST NOTIFICATION (Ganti Alert) --- */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 12px;
+            position: fixed;
+            z-index: 9999;
+            left: 50%;
+            bottom: 90px;
+            transform: translateX(-50%);
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 100px;
         }
 
         /* --- HEADER --- */
@@ -45,8 +68,6 @@
             background-color: var(--primary);
             color: white;
             padding: 10px 15px;
-            /* FIX 3: Tambah padding atas untuk status bar jika transparent */
-            padding-top: calc(10px + env(safe-area-inset-top));
             position: sticky;
             top: 0;
             z-index: 100;
@@ -54,8 +75,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            height: auto;
-            min-height: 60px;
+            height: 60px;
         }
 
         .logo-container { display: flex; align-items: center; gap: 8px; }
@@ -76,21 +96,37 @@
         .shopping-list-card {
             background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 4px solid var(--text-light);
+            position: relative; /* Untuk overlay */
+            overflow: hidden;
         }
         .shopping-list-info h3 { font-size: 16px; margin-bottom: 4px; }
         .shopping-list-info p { font-size: 12px; color: var(--text-light); }
         .budget-status { font-weight: 700; font-size: 13px; margin-top: 5px; }
         .status-ok { color: var(--success); }
         .status-over { color: var(--danger); }
+        
+        .list-action-group { display: flex; align-items: center; gap: 15px; }
+        .btn-delete-list { background: none; border: none; color: #ccc; font-size: 16px; padding: 5px; }
+        .btn-delete-list:hover { color: var(--danger); }
         .chevron { color: #ccc; }
 
+        /* INLINE DELETE OVERLAY (COMMON) */
+        .delete-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--danger-bg);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; z-index: 10;
+        }
+        .del-msg { color: var(--danger); font-weight: 600; font-size: 13px; }
+        .del-btns { display: flex; gap: 8px; }
+        .btn-yes { background: var(--danger); color: white; border: none; padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .btn-no { background: white; color: #333; border: 1px solid #ccc; padding: 5px 12px; border-radius: 4px; font-size: 12px; }
+
         .fab {
-            position: fixed; 
-            /* FIX 4: Naikkan butang FAB supaya tak kena navigation bar */
-            bottom: calc(25px + env(safe-area-inset-bottom)); 
-            right: 25px; 
+            position: fixed; bottom: calc(25px + env(safe-area-inset-bottom)); right: 25px; 
             width: 56px; height: 56px; background-color: var(--primary); color: white;
-            border-radius: 50%; border: none; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 90;
+            border-radius: 50%; border: none; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+            display: flex; align-items: center; justify-content: center; z-index: 90;
         }
 
         /* --- CART SCREEN --- */
@@ -120,7 +156,7 @@
         .mini-input { flex: 1; background: #f0f0f0; border: none; padding: 10px; border-radius: 8px; font-size: 14px; text-align: center; }
         .btn-add-cart { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: 600; width: 100%; margin-top: 5px; }
 
-        .cart-item { background: white; margin-bottom: 2px; padding: 15px; display: flex; align-items: flex-start; position: relative; }
+        .cart-item { background: white; margin-bottom: 2px; padding: 15px; display: flex; align-items: flex-start; position: relative; overflow: hidden; }
         .cart-item.bought { background: #fafafa; }
         .cart-item.bought .product-name { text-decoration: line-through; color: #999; }
         .cart-item.bought .product-img { opacity: 0.5; }
@@ -149,32 +185,18 @@
         .delete-btn-mini { position: absolute; top: 15px; right: 15px; color: #ccc; border: none; background: none; font-size: 14px; }
 
         .cart-footer { 
-            position: fixed; 
-            bottom: 0; left: 0; width: 100%; 
-            background: white; 
-            padding: 12px 20px; 
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); 
-            display: flex; justify-content: space-between; align-items: center; 
-            z-index: 99; 
-            /* FIX 5: Padding bawah untuk elak navigation bar overlay */
+            position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 12px 20px; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 99; 
             padding-bottom: calc(12px + env(safe-area-inset-bottom));
         }
-        
         .total-label { font-size: 12px; color: #777; display: block; }
         .total-amount { font-size: 18px; font-weight: 800; color: var(--primary); }
         .checkout-status { font-size: 12px; font-weight: 600; color: var(--success); text-align: right; }
-
-        .delete-confirm-box { background: var(--danger-bg); padding: 10px; margin-top: 5px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
-        .del-text { color: var(--danger); font-size: 12px; font-weight: 600; }
-        .del-actions button { border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
-        .btn-confirm { background: var(--danger); color: white; }
-        .btn-cancel { background: white; border: 1px solid #ccc !important; }
 
         /* MODALS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: flex-end; }
         .modal-content { 
             background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease; 
-            /* FIX 6: Modal juga perlu padding bawah extra */
             padding-bottom: calc(40px + env(safe-area-inset-bottom));
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -186,16 +208,18 @@
         .suggestions-list { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; border-top: none; z-index: 50; max-height: 150px; overflow-y: auto; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
         .suggest-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
 
-        /* HISTORY MODAL SPECIFIC */
+        /* SETTINGS & HISTORY */
         .history-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; font-size: 13px; }
         .history-date { color: #777; font-size: 11px; }
         .history-price { font-weight: 600; color: var(--primary); }
-
+        .sm-item { padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items: center; }
         .brand-credit { text-align: center; margin-top: 30px; font-size: 12px; color: #aaa; padding-bottom: 20px;}
         .brand-credit span { color: var(--primary); font-weight: 600; }
     </style>
 </head>
 <body>
+
+    <div id="toast">Mesej di sini</div>
 
     <header class="app-header">
         <div class="logo-container">
@@ -298,9 +322,10 @@
             <div class="section-header">Lokasi / Supermarket</div>
             <div id="smListSetting"></div>
             <button class="mini-input" id="addSMBtn" style="width:100%; margin-top:10px;">+ Tambah Lokasi</button>
-            <div class="brand-credit">Version 2.6 • <span>RashidZainol</span></div>
+            <div class="brand-credit">Version 2.8 • <span>RashidZainol</span></div>
         </div>
     </div>
+
     <div class="modal" id="smModal">
         <div class="modal-content">
             <button class="close-btn" id="closeSMModal">&times;</button>
@@ -311,9 +336,29 @@
         </div>
     </div>
 
+    <div class="modal" id="restoreModal">
+        <div class="modal-content" style="text-align:center;">
+            <i class="fas fa-exclamation-triangle" style="font-size:40px; color:var(--danger); margin-bottom:10px;"></i>
+            <h3>Amaran Restore</h3>
+            <p style="color:#555; font-size:13px; margin:10px 0 20px;">Data semasa akan dipadam dan digantikan dengan data backup. Teruskan?</p>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-add-cart" style="background:#ccc; color:#333;" onclick="document.getElementById('restoreModal').style.display='none'">Batal</button>
+                <button class="btn-add-cart" style="background:var(--danger);" id="confirmRestoreBtn">Ya, Restore</button>
+            </div>
+        </div>
+    </div>
+
     <input type="file" id="jsonFileInput" style="display:none;">
 
     <script>
+        // --- UTILS: TOAST ---
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = "show";
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+        }
+
         // --- DATA ---
         let shoppingLists = JSON.parse(localStorage.getItem('shoppingLists')) || [];
         let currentListId = null;
@@ -344,7 +389,7 @@
         }
         document.getElementById('backBtn').onclick = showHome;
 
-        // --- HOME LOGIC ---
+        // --- HOME LOGIC (INLINE DELETE) ---
         function renderLists() {
             const container = document.getElementById('listsContainer');
             container.innerHTML = '';
@@ -362,7 +407,16 @@
                 const isOverBudget = total > list.budget;
                 const statusColor = isOverBudget ? 'status-over' : 'status-ok';
 
+                // Added Inline Overlay for Delete
                 div.innerHTML = `
+                    <div class="delete-overlay" id="del-overlay-${list.id}" style="display:none;">
+                        <span class="del-msg">Padam senarai ini?</span>
+                        <div class="del-btns">
+                            <button class="btn-yes" onclick="doDeleteList('${list.id}')">Ya</button>
+                            <button class="btn-no" onclick="cancelDeleteList('${list.id}')">Batal</button>
+                        </div>
+                    </div>
+
                     <div class="shopping-list-info">
                         <h3>${list.name}</h3>
                         <p>${new Date(list.date).toLocaleDateString('ms-MY')} • <span style="color:${sm.color}; font-weight:600;">${sm.name}</span></p>
@@ -370,11 +424,38 @@
                             Belanja: RM ${total.toFixed(2)} / RM ${list.budget.toFixed(2)}
                         </p>
                     </div>
-                    <i class="fas fa-chevron-right chevron"></i>
+                    <div class="list-action-group">
+                        <button class="btn-delete-list" onclick="askDeleteList('${list.id}', event)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <i class="fas fa-chevron-right chevron"></i>
+                    </div>
                 `;
                 div.onclick = () => showCart(list.id);
                 container.appendChild(div);
             });
+        }
+
+        // Inline Delete List Logic
+        window.askDeleteList = (id, e) => {
+            e.stopPropagation();
+            document.getElementById(`del-overlay-${id}`).style.display = 'flex';
+        }
+        window.cancelDeleteList = (id) => {
+            if(document.getElementById(`del-overlay-${id}`)) {
+                document.getElementById(`del-overlay-${id}`).style.display = 'none';
+            }
+            event.stopPropagation();
+        }
+        window.doDeleteList = (id) => {
+            event.stopPropagation();
+            const index = shoppingLists.findIndex(l => l.id === id);
+            if (index > -1) {
+                shoppingLists.splice(index, 1);
+                save();
+                renderLists();
+                showToast("Senarai dipadam");
+            }
         }
 
         // --- CART LOGIC ---
@@ -404,11 +485,11 @@
                 if(item.isConfirmingDelete) {
                     el.className = 'cart-item';
                     el.innerHTML = `
-                        <div style="width:100%;">
-                            <div class="product-name">${item.name}</div>
-                            <div class="delete-confirm-box">
-                                <span class="del-text">Padam dari bakul?</span>
-                                <div class="del-actions"><button class="btn-confirm" onclick="confirmDel(${originalIndex})">Ya</button><button class="btn-cancel" onclick="cancelDel(${originalIndex})">Batal</button></div>
+                        <div class="delete-overlay" style="position:absolute; width:100%; height:100%; display:flex;">
+                            <span class="del-msg">Padam ${item.name}?</span>
+                            <div class="del-btns">
+                                <button class="btn-yes" onclick="confirmDel(${originalIndex})">Ya</button>
+                                <button class="btn-no" onclick="cancelDel(${originalIndex})">Batal</button>
                             </div>
                         </div>`;
                 } else {
@@ -457,11 +538,13 @@
             const name = document.getElementById('itemName').value.trim();
             const price = parseFloat(document.getElementById('itemPrice').value);
             const qty = parseInt(document.getElementById('itemQuantity').value);
-            if(!name || isNaN(price) || isNaN(qty) || qty < 1) return alert('Isi maklumat produk');
+            if(!name || isNaN(price) || isNaN(qty) || qty < 1) return showToast('Sila isi nama, harga dan kuantiti');
+            
             const list = shoppingLists.find(l => l.id === currentListId);
             const existIdx = list.items.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
             if(existIdx !== -1) { list.items[existIdx].quantity += qty; list.items[existIdx].price = price; list.items[existIdx].bought = false; }
             else { list.items.push({name, price, quantity:qty, bought:false}); }
+            
             updateDB(name, price, list.location); save(); renderCart();
             document.getElementById('itemName').value = ''; document.getElementById('itemPrice').value = ''; document.getElementById('itemQuantity').value = 1; document.getElementById('suggestions').style.display = 'none';
         }
@@ -486,19 +569,14 @@
             if(!data || !data.prices || data.prices.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#999;">Tiada rekod harga.</p>';
             } else {
-                // Sort date descending
                 const sorted = [...data.prices].sort((a,b) => new Date(b.date) - new Date(a.date));
                 sorted.slice(0, 10).forEach(p => {
                     const sm = supermarkets.find(s => s.id === p.location) || {name: 'Lain'};
                     container.innerHTML += `
                         <div class="history-item">
-                            <div>
-                                <span style="display:block;">${sm.name}</span>
-                                <span class="history-date">${new Date(p.date).toLocaleDateString('ms-MY')}</span>
-                            </div>
+                            <div><span style="display:block;">${sm.name}</span><span class="history-date">${new Date(p.date).toLocaleDateString('ms-MY')}</span></div>
                             <div class="history-price">RM ${p.price.toFixed(2)}</div>
-                        </div>
-                    `;
+                        </div>`;
                 });
             }
             histModal.style.display = 'flex';
@@ -523,25 +601,91 @@
         const newListModal = document.getElementById('newListModal');
         document.getElementById('newListBtn').onclick = () => { updateLocSelect(); newListModal.style.display = 'flex'; }
         document.getElementById('closeNewListModal').onclick = () => newListModal.style.display = 'none';
-        document.getElementById('saveListBtn').onclick = () => { const name = document.getElementById('listName').value; const budget = parseFloat(document.getElementById('listBudget').value); const loc = document.getElementById('listLocation').value; const date = document.getElementById('listDate').value; if(!name || isNaN(budget)) return; shoppingLists.push({id:Date.now().toString(), name, budget, location:loc, date, items:[]}); save(); showHome(); newListModal.style.display = 'none'; }
+        document.getElementById('saveListBtn').onclick = () => { 
+            const name = document.getElementById('listName').value; 
+            const budget = parseFloat(document.getElementById('listBudget').value); 
+            const loc = document.getElementById('listLocation').value; 
+            const date = document.getElementById('listDate').value; 
+            if(!name || isNaN(budget)) return showToast("Isi Nama dan Bajet");
+            shoppingLists.push({id:Date.now().toString(), name, budget, location:loc, date, items:[]}); 
+            save(); showHome(); newListModal.style.display = 'none'; showToast("Senarai dicipta!");
+        }
 
         const setModal = document.getElementById('settingsModal');
         document.getElementById('settingsBtn').onclick = () => { renderSMSetting(); setModal.style.display = 'flex'; }
         document.getElementById('closeSettingsModal').onclick = () => setModal.style.display = 'none';
-        function renderSMSetting() { const div = document.getElementById('smListSetting'); div.innerHTML = ''; supermarkets.forEach((s, i) => { if(s.id === 'others') return; div.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span><b style="color:${s.color}">●</b> ${s.name}</span><button onclick="delSM(${i})" style="color:red; border:none; background:none;">X</button></div>`; }); }
-        window.delSM = (i) => { if(confirm('Padam?')) { supermarkets.splice(i, 1); save(); renderSMSetting(); } }
+        
+        // Inline Delete for Supermarket (Settings)
+        function renderSMSetting() { 
+            const div = document.getElementById('smListSetting'); div.innerHTML = ''; 
+            supermarkets.forEach((s, i) => { 
+                if(s.id === 'others') return; 
+                div.innerHTML += `
+                    <div class="sm-item" id="sm-row-${i}">
+                        <div class="sm-display" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                            <span><b style="color:${s.color}">●</b> ${s.name}</span>
+                            <button onclick="askDelSM(${i})" style="color:red; border:none; background:none;">X</button>
+                        </div>
+                        <div class="sm-confirm" style="display:none; width:100%; justify-content:space-between; align-items:center;">
+                            <span style="color:red; font-size:12px;">Padam ${s.name}?</span>
+                            <div>
+                                <button class="btn-yes" onclick="doDelSM(${i})">Ya</button>
+                                <button class="btn-no" onclick="renderSMSetting()">Batal</button>
+                            </div>
+                        </div>
+                    </div>`; 
+            }); 
+        }
+        window.askDelSM = (i) => {
+            const row = document.getElementById(`sm-row-${i}`);
+            row.querySelector('.sm-display').style.display = 'none';
+            row.querySelector('.sm-confirm').style.display = 'flex';
+        }
+        window.doDelSM = (i) => {
+            supermarkets.splice(i, 1); save(); renderSMSetting(); showToast("Lokasi dipadam");
+        }
 
         const smModal = document.getElementById('smModal');
         document.getElementById('addSMBtn').onclick = () => smModal.style.display = 'flex';
         document.getElementById('closeSMModal').onclick = () => smModal.style.display = 'none';
-        document.getElementById('saveSMBtn').onclick = () => { const name = document.getElementById('smName').value; const color = document.getElementById('smColor').value; if(!name) return; supermarkets.push({id:name.toLowerCase().replace(/\s/g,''), name, color}); save(); smModal.style.display = 'none'; renderSMSetting(); }
+        document.getElementById('saveSMBtn').onclick = () => { 
+            const name = document.getElementById('smName').value; const color = document.getElementById('smColor').value; 
+            if(!name) return showToast("Isi nama lokasi");
+            supermarkets.push({id:name.toLowerCase().replace(/\s/g,''), name, color}); 
+            save(); smModal.style.display = 'none'; renderSMSetting(); showToast("Lokasi ditambah");
+        }
 
         function updateLocSelect() { const s = document.getElementById('listLocation'); s.innerHTML = ''; supermarkets.forEach(sm => s.innerHTML += `<option value="${sm.id}">${sm.name}</option>`); }
         function save() { localStorage.setItem('shoppingLists', JSON.stringify(shoppingLists)); localStorage.setItem('supermarkets', JSON.stringify(supermarkets)); }
         
-        document.getElementById('exportJSONBtn').onclick = () => { const blob = new Blob([JSON.stringify({shoppingLists, supermarkets, productDatabase})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'smartdapur.json'; a.click(); }
+        // Export & Restore (Non-Popup)
+        document.getElementById('exportJSONBtn').onclick = () => { const blob = new Blob([JSON.stringify({shoppingLists, supermarkets, productDatabase})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'smartdapur.json'; a.click(); showToast("Backup dimuat turun"); }
+        
+        let pendingRestoreData = null;
         document.getElementById('importJSONBtn').onclick = () => document.getElementById('jsonFileInput').click();
-        document.getElementById('jsonFileInput').onchange = (e) => { const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); if(confirm('Restore data?')) { shoppingLists = d.shoppingLists; supermarkets = d.supermarkets; productDatabase = d.productDatabase; save(); location.reload(); } }; r.readAsText(e.target.files[0]); }
+        document.getElementById('jsonFileInput').onchange = (e) => { 
+            const r = new FileReader(); 
+            r.onload = (ev) => { 
+                try {
+                    pendingRestoreData = JSON.parse(ev.target.result); 
+                    // Show Custom Modal instead of window.confirm
+                    document.getElementById('restoreModal').style.display = 'flex';
+                } catch(err) { showToast("File rosak"); }
+            }; 
+            r.readAsText(e.target.files[0]); 
+        }
+        
+        document.getElementById('confirmRestoreBtn').onclick = () => {
+            if(pendingRestoreData) {
+                shoppingLists = pendingRestoreData.shoppingLists; 
+                supermarkets = pendingRestoreData.supermarkets; 
+                productDatabase = pendingRestoreData.productDatabase; 
+                save(); 
+                document.getElementById('restoreModal').style.display = 'none';
+                location.reload(); 
+            }
+        }
+
         function init() { updateLocSelect(); renderLists(); }
     </script>
 </body>
